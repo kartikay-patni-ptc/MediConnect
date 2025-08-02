@@ -1,0 +1,14 @@
+.p-toast-message-content {
+  white-space: pre-line;
+}
+/* Restrict PrimeNG toast width and wrap long messages */
+/* Wider and fixed width for PrimeNG toast */
+.p-toast {
+  width: 420px;
+  max-width: 420px;
+  min-width: 420px;
+}
+.p-toast-message {
+  white-space: normal;
+  word-break: break-word;
+}
