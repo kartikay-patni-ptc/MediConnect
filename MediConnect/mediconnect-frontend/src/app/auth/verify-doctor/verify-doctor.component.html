@@ -1,0 +1,31 @@
+<div class="verify-doctor-wrapper">
+  <p-card header="Doctor Verification" styleClass="verify-card">
+    <form [formGroup]="verifyForm" (ngSubmit)="onVerify()">
+      <div class="p-fluid p-formgrid p-grid">
+        <div class="p-field p-col-12">
+          <label for="name">Full Name</label>
+          <input id="name" pInputText formControlName="name" placeholder="Enter full name" />
+        </div>
+
+        <div class="p-field p-col-12">
+          <label for="council">Medical Council</label>
+          <input id="council" pInputText formControlName="council" placeholder="e.g. Maharashtra Medical Council" />
+        </div>
+
+        <div class="p-field p-col-12">
+          <label for="registrationNumber">Registration Number</label>
+          <input id="registrationNumber" pInputText formControlName="registrationNumber" placeholder="e.g. 123456" />
+        </div>
+
+        <div class="p-field p-col-12">
+          <label for="year">Year of Registration (optional)</label>
+          <input id="year" pInputText formControlName="year" placeholder="e.g. 2020" />
+        </div>
+
+        <div class="p-field p-col-12">
+          <button pButton type="submit" label="Verify Doctor" class="p-button-success" [disabled]="verifyForm.invalid"></button>
+        </div>
+      </div>
+    </form>
+  </p-card>
+</div>

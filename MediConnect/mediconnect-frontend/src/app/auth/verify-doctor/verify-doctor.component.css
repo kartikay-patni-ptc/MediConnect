@@ -1,0 +1,12 @@
+.verify-doctor-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-top: 3rem;
+}
+
+.verify-card {
+  width: 100%;
+  max-width: 500px;
+  padding: 2rem;
+}

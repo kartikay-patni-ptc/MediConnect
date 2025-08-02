@@ -51,12 +51,17 @@ export class SignupComponent implements OnInit {
         summary: 'Signup Successful',
         detail: 'Your account has been created!'
       });
+      const selectedRole = this.signupForm.get('role')?.value;
       setTimeout(() => {
+        if (selectedRole === 'doctor') {
+          window.location.href = '/auth/verify-doctor';
+        }
+        else {
         window.location.href = '/auth/login';
+      }
       }, 1200);
     } else {
       this.signupForm.markAllAsTouched();
-      // Show password guideline toast if password is insecure
       const passwordControl = this.signupForm.get('password');
       if (passwordControl?.errors?.['insecurePassword']) {
         this.messageService.add(({
