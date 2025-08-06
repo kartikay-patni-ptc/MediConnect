@@ -1,10 +1,28 @@
 <div style="text-align:center;margin-bottom:1.5rem;">
   <h2 style="margin:0;color:#1976d2;font-weight:700;">MediConnect</h2>
 </div>
+<div class="register-link" style="text-align:center;margin-top:1rem;">
+  <span>Already have an account? <a routerLink="/auth/login">Login</a></span>
+</div>
 <p-toast></p-toast>
 <div class="signup-container">
   <p-card header="Sign Up" styleClass="signup-card">
+    <!-- Test Button -->
+    <div style="margin-bottom: 1rem;">
+      <button pButton type="button" label="Test Server Connection" 
+              class="p-button-secondary" 
+              (click)="testConnection()"
+              style="width: 100%; margin-bottom: 1rem;"></button>
+    </div>
     <form [formGroup]="signupForm" (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input pInputText id="username" type="text" formControlName="username" placeholder="Username" />
+        <div *ngIf="signupForm.get('username')?.touched && signupForm.get('username')?.errors">
+          <small class="p-error" *ngIf="(signupForm.get('username')?.errors?.['required'] ?? false)">Username is required.</small>
+          <small class="p-error" *ngIf="(signupForm.get('username')?.errors?.['minlength'] ?? false)">Username must be at least 3 characters.</small>
+        </div>
+      </div>
       <div class="form-group">
         <label for="email">Email</label>
         <input pInputText id="email" type="email" formControlName="email" placeholder="Email" />
@@ -19,19 +37,24 @@
         <div *ngIf="signupForm.get('password')?.touched && signupForm.get('password')?.errors">
           <small class="p-error" style="display:block;margin-bottom:4px;" *ngIf="(signupForm.get('password')?.errors?.['required'] ?? false)">Password is required.</small>
           <small class="p-error" style="display:block;margin-bottom:4px;" *ngIf="(signupForm.get('password')?.errors?.['minlength'] ?? false)">Password must be at least 8 characters.</small>
-          <small class="p-error" style="display:block;margin-bottom:4px;" *ngIf="(signupForm.get('password')?.errors?.['insecurePassword'] ?? false)">Password must include uppercase, lowercase, number, and special character.</small>
         </div>
       </div>
       <div class="form-group">
         <label for="confirmPassword">Confirm Password</label>
         <p-password id="confirmPassword" formControlName="confirmPassword" placeholder="Confirm Password" [feedback]="false"></p-password>
+        <div *ngIf="signupForm.get('confirmPassword')?.touched && signupForm.errors?.['mismatch']">
+          <small class="p-error">Passwords do not match.</small>
+        </div>
       </div>
       <div class="form-group">
         <label for="role">Role</label>
         <p-dropdown id="role" [options]="roles" formControlName="role" placeholder="Select Role"></p-dropdown>
+        <div *ngIf="signupForm.get('role')?.touched && signupForm.get('role')?.errors?.['required']">
+          <small class="p-error">Role is required.</small>
+        </div>
       </div>
       <div class="form-group">
-        <button pButton type="submit" label="Sign Up" class="full-width"></button>
+        <button pButton type="submit" label="Sign Up" class="full-width" [loading]="loading" [disabled]="loading"></button>
       </div>
     </form>
   </p-card>
