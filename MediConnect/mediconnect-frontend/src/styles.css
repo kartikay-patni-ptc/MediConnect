@@ -1,4 +1,11 @@
-.p-toast-message-content {
-  white-space: pre-line;
-}
-/* You can add global styles to this file, and also import other style files */
+/* PrimeNG Theme and Core */
+@import "primeng/resources/themes/lara-light-indigo/theme.css";
+@import "primeng/resources/primeng.min.css";
+@import "primeicons/primeicons.css";
+
+/* TailwindCSS Base */
+@tailwind base;
+
+/* TailwindCSS Components and Utilities */
+@tailwind components;
+@tailwind utilities;
