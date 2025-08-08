@@ -1,0 +1,136 @@
+<div class="profile-container">
+  <div class="profile-card">
+    <div class="profile-header">
+      <h2><i class="fas fa-clinic-medical"></i> Pharmacy Store Profile</h2>
+      <p>Complete your pharmacy store information to get started</p>
+    </div>
+
+    <form [formGroup]="profileForm" (ngSubmit)="onSubmit(); $event.preventDefault()" class="profile-form">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="name">Store Name *</label>
+          <input 
+            type="text" 
+            id="name" 
+            formControlName="name"
+            placeholder="Enter your pharmacy store name"
+            class="form-control"
+            [class.error]="profileForm.get('name')?.invalid && profileForm.get('name')?.touched"
+          >
+          <div class="error-message" *ngIf="profileForm.get('name')?.invalid && profileForm.get('name')?.touched">
+            <span *ngIf="profileForm.get('name')?.errors?.['required']">Store name is required</span>
+            <span *ngIf="profileForm.get('name')?.errors?.['minlength']">Store name must be at least 3 characters</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="ownerName">Owner Name *</label>
+          <input 
+            type="text" 
+            id="ownerName" 
+            formControlName="ownerName"
+            placeholder="Enter owner's full name"
+            class="form-control"
+            [class.error]="profileForm.get('ownerName')?.invalid && profileForm.get('ownerName')?.touched"
+          >
+          <div class="error-message" *ngIf="profileForm.get('ownerName')?.invalid && profileForm.get('ownerName')?.touched">
+            <span *ngIf="profileForm.get('ownerName')?.errors?.['required']">Owner name is required</span>
+            <span *ngIf="profileForm.get('ownerName')?.errors?.['minlength']">Owner name must be at least 2 characters</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="licenseNumber">License Number *</label>
+          <input 
+            type="text" 
+            id="licenseNumber" 
+            formControlName="licenseNumber"
+            placeholder="Enter pharmacy license number"
+            class="form-control"
+            [class.error]="profileForm.get('licenseNumber')?.invalid && profileForm.get('licenseNumber')?.touched"
+          >
+          <div class="error-message" *ngIf="profileForm.get('licenseNumber')?.invalid && profileForm.get('licenseNumber')?.touched">
+            <span *ngIf="profileForm.get('licenseNumber')?.errors?.['required']">License number is required</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="phoneNumber">Phone Number *</label>
+          <input 
+            type="tel" 
+            id="phoneNumber" 
+            formControlName="phoneNumber"
+            placeholder="Enter 10-digit phone number"
+            class="form-control"
+            [class.error]="profileForm.get('phoneNumber')?.invalid && profileForm.get('phoneNumber')?.touched"
+          >
+          <div class="error-message" *ngIf="profileForm.get('phoneNumber')?.invalid && profileForm.get('phoneNumber')?.touched">
+            <span *ngIf="profileForm.get('phoneNumber')?.errors?.['required']">Phone number is required</span>
+            <span *ngIf="profileForm.get('phoneNumber')?.errors?.['pattern']">Please enter a valid 10-digit phone number</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email *</label>
+        <input 
+          type="email" 
+          id="email" 
+          formControlName="email"
+          placeholder="Enter business email"
+          class="form-control"
+          [class.error]="profileForm.get('email')?.invalid && profileForm.get('email')?.touched"
+        >
+        <div class="error-message" *ngIf="profileForm.get('email')?.invalid && profileForm.get('email')?.touched">
+          <span *ngIf="profileForm.get('email')?.errors?.['required']">Email is required</span>
+          <span *ngIf="profileForm.get('email')?.errors?.['email']">Please enter a valid email address</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="address">Address *</label>
+        <textarea 
+          id="address" 
+          formControlName="address"
+          placeholder="Enter store address"
+          class="form-control"
+          rows="3"
+          [class.error]="profileForm.get('address')?.invalid && profileForm.get('address')?.touched"
+        ></textarea>
+        <div class="error-message" *ngIf="profileForm.get('address')?.invalid && profileForm.get('address')?.touched">
+          <span *ngIf="profileForm.get('address')?.errors?.['required']">Address is required</span>
+          <span *ngIf="profileForm.get('address')?.errors?.['minlength']">Address must be at least 10 characters</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="description">Store Description *</label>
+        <textarea 
+          id="description" 
+          formControlName="description"
+          placeholder="Describe your pharmacy store, services, specialties, etc."
+          class="form-control"
+          rows="4"
+          [class.error]="profileForm.get('description')?.invalid && profileForm.get('description')?.touched"
+        ></textarea>
+        <div class="error-message" *ngIf="profileForm.get('description')?.invalid && profileForm.get('description')?.touched">
+          <span *ngIf="profileForm.get('description')?.errors?.['required']">Description is required</span>
+          <span *ngIf="profileForm.get('description')?.errors?.['minlength']">Description must be at least 20 characters</span>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button 
+          type="submit" 
+          class="btn btn-primary"
+          [disabled]="profileForm.invalid || loading"
+        >
+          <i class="fas fa-spinner fa-spin" *ngIf="loading"></i>
+          {{ loading ? 'Creating Profile...' : 'Create Pharmacy Profile' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

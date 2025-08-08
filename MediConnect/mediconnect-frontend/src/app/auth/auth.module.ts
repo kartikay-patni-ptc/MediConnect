@@ -5,10 +5,11 @@ import { AuthRoutingModule } from './auth-routing.module';
 import { SignupComponent } from './signup/signup.component';
 import { LoginComponent } from './login/login.component';
 import { VerifyDoctorComponent } from './verify-doctor/verify-doctor.component';
+import { ForgotPasswordComponent } from './forgot-password/forgot-password.component';
 import { HttpClientModule } from '@angular/common/http';
 
 @NgModule({
-  declarations: [SignupComponent, LoginComponent, VerifyDoctorComponent],
+  declarations: [SignupComponent, LoginComponent, VerifyDoctorComponent, ForgotPasswordComponent],
   imports: [
     CommonModule,
     AuthRoutingModule,
