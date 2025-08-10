@@ -25,7 +25,7 @@ export class LoginComponent implements OnInit {
   ngOnInit(): void {
     this.loginForm = this.fb.group({
       username: ['', [Validators.required]],
-      password: ['', Validators.required]
+      password: Validators.required
     });
   }
 
@@ -42,16 +42,22 @@ export class LoginComponent implements OnInit {
             detail: `Welcome back, ${response.username}! You are logged in as ${response.role}`
           });
           
-          // Clear the form
           this.loginForm.reset();
           
-          // For pharmacists, check if they have a profile
           if (response.role === 'PHARMACIST') {
             return this.authService.getPharmacyProfile(response.userId).pipe(
               catchError(() => {
-                // If profile doesn't exist, redirect to profile creation
                 setTimeout(() => {
                   this.router.navigate(['/pharmacist/profile']);
+                }, 1500);
+                return of(null);
+              })
+            );
+          } else if (response.role === 'DOCTOR') {
+            return this.authService.getDoctorProfile(response.userId).pipe(
+              catchError(() => {
+                setTimeout(() => {
+                  this.router.navigate(['/doctor/profile']);
                 }, 1500);
                 return of(null);
               })
@@ -64,16 +70,16 @@ export class LoginComponent implements OnInit {
           this.loading = false;
           
           if (response && response.role === 'PHARMACIST') {
-            // Profile exists, redirect to dashboard
             setTimeout(() => {
               this.router.navigate(['/pharmacist/dashboard']);
             }, 1500);
-          } else if (response) {
-            // Other roles, redirect to their dashboard
+          } else if (response && response.role === 'DOCTOR') {
             setTimeout(() => {
-              if (response.role === 'DOCTOR') {
-                this.router.navigate(['/doctor/dashboard']);
-              } else if (response.role === 'PATIENT') {
+              this.router.navigate(['/doctor/dashboard']);
+            }, 1500);
+          } else if (response) {
+            setTimeout(() => {
+              if (response.role === 'PATIENT') {
                 this.router.navigate(['/patient/dashboard']);
               } else {
                 this.router.navigate(['/home']);

@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
+import { MessageService } from 'primeng/api';
 import { AuthService } from '../../auth/auth.service';
 
 @Component({
@@ -13,7 +15,11 @@ export class PharmacistDashboardComponent implements OnInit {
   loading = true;
   hasProfile = false;
 
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    private router: Router,
+    private messageService: MessageService
+  ) {}
 
   ngOnInit(): void {
     this.currentUser = this.authService.getCurrentUser();
@@ -36,14 +42,23 @@ export class PharmacistDashboardComponent implements OnInit {
     });
   }
 
+  goToHome(): void {
+    this.router.navigate(['/home']);
+  }
+
   logout(): void {
     this.authService.logout();
+    this.messageService.add({
+      severity: 'success',
+      summary: 'Logged Out',
+      detail: 'You have been successfully logged out'
+    });
+    setTimeout(() => {
+      this.router.navigate(['/home']);
+    }, 1000);
   }
 
   navigateToProfile(): void {
-    // Navigate to profile creation if no profile exists
-    if (!this.hasProfile) {
-      // This will be handled by routing
-    }
+    this.router.navigate(['/pharmacist/profile']);
   }
 }

@@ -3,6 +3,7 @@ import { MenuItem, MessageService } from 'primeng/api';
 import { ViewChild } from '@angular/core';
 import { Table } from 'primeng/table';
 import { Router } from '@angular/router';
+import { AuthService } from '../../auth/auth.service';
 
 interface Appointment {
   id: string;
@@ -25,6 +26,7 @@ export class DashboardComponent implements OnInit {
   selectedDate: Date = new Date();
   searchQuery = '';
   loading = true;
+  currentUser: any;
 
   greeting = 'Good afternoon, Dr. Onichaan 👋';
 
@@ -68,10 +70,14 @@ export class DashboardComponent implements OnInit {
     { id: 'APT-1015', patientName: 'Noah Williams', time: 'Aug 13, 02:00 PM', type: 'Consultation', status: 'Upcoming' },
   ];
 
-  constructor(private messageService: MessageService, private router: Router) {}
+  constructor(
+    private messageService: MessageService, 
+    private router: Router,
+    private authService: AuthService
+  ) {}
 
   ngOnInit(): void {
-    // Restore sidebar preference only
+    this.currentUser = this.authService.getCurrentUser();
     this.isSidebarOpen = localStorage.getItem('mc_sidebarOpen') !== 'false';
 
     this.actionItems = [
@@ -88,7 +94,6 @@ export class DashboardComponent implements OnInit {
       { label: 'Settings', icon: 'pi pi-cog' }
     ];
 
-    // Simulate initial loading
     setTimeout(() => {
       this.loading = false;
     }, 500);
@@ -153,5 +158,21 @@ export class DashboardComponent implements OnInit {
       default:
         return 'info';
     }
+  }
+
+  goToHome(): void {
+    this.router.navigate(['/home']);
+  }
+
+  logout(): void {
+    this.authService.logout();
+    this.messageService.add({
+      severity: 'success',
+      summary: 'Logged Out',
+      detail: 'You have been successfully logged out'
+    });
+    setTimeout(() => {
+      this.router.navigate(['/home']);
+    }, 1000);
   }
 }

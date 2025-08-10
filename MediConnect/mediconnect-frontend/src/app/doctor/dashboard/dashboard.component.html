@@ -50,6 +50,8 @@
         </span>
         <p-splitButton label="New" icon="pi pi-plus" [model]="actionItems"></p-splitButton>
         <button pButton icon="pi pi-bell" class="p-button-text" pTooltip="Notifications"></button>
+        <button pButton icon="pi pi-home" class="p-button-outlined p-button-sm" (click)="goToHome()" pTooltip="Go to Home"></button>
+        <button pButton icon="pi pi-sign-out" class="p-button-danger p-button-outlined p-button-sm" (click)="logout()" pTooltip="Logout"></button>
         <p-avatar label="DO" shape="circle"></p-avatar>
       </div>
     </p-toolbar>
@@ -58,9 +60,9 @@
       <div class="max-w-7xl mx-auto space-y-6">
         <div class="flex items-center justify-between">
           <h2 class="text-xl lg:text-2xl font-semibold">Dashboard</h2>
-          <button pButton type="button" icon="pi" class="p-button-text hidden lg:inline-flex" (click)="toggleSidebar()">
-            <i class="pi" [ngClass]="isSidebarOpen ? 'pi-times' : 'pi-bars'"></i>
-          </button>
+          <button pButton type="button" class="p-button-text hidden lg:inline-flex" (click)="toggleSidebar()">
+  <i class="pi" [ngClass]="isSidebarOpen ? 'pi-times' : 'pi-bars'"></i>
+</button>
         </div>
 
         <!-- Upload Prescription Dialog -->

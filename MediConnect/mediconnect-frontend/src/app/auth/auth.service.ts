@@ -39,6 +39,23 @@ export interface PharmacyProfile {
   email: string;
   address: string;
   description: string;
+  latitude?: number;
+  longitude?: number;
+  userId: number;
+}
+
+export interface DoctorProfile {
+  firstName: string;
+  lastName: string;
+  specialization: string;
+  licenseNumber: string;
+  phoneNumber: string;
+  email: string;
+  experience: number;
+  education: string;
+  hospital: string;
+  address: string;
+  description: string;
   userId: number;
 }
 
@@ -53,15 +70,14 @@ export interface ApiResponse {
 export class AuthService {
   private readonly API_URL = 'http://localhost:8080/api/auth';
   private readonly PHARMACY_API_URL = 'http://localhost:8080/api/pharmacy';
+  private readonly DOCTOR_API_URL = 'http://localhost:8080/api/doctor';
 
   constructor(private http: HttpClient) {}
 
-  // Health check method to test basic server connectivity
   healthCheck(): Observable<ApiResponse> {
     return this.http.get<ApiResponse>(`${this.API_URL}/health`);
   }
 
-  // Test method to check if server is accessible
   testConnection(): Observable<ApiResponse> {
     return this.http.get<ApiResponse>(`${this.API_URL}/test`);
   }
@@ -70,7 +86,6 @@ export class AuthService {
     return this.http.post<LoginResponse>(`${this.API_URL}/login`, credentials)
       .pipe(
         tap((response: LoginResponse) => {
-          // Store token and user info
           localStorage.setItem('token', response.token);
           localStorage.setItem('username', response.username);
           localStorage.setItem('role', response.role);
@@ -107,6 +122,23 @@ export class AuthService {
 
   updatePharmacyProfile(id: number, profile: PharmacyProfile): Observable<any> {
     return this.http.put(`${this.PHARMACY_API_URL}/profile/${id}`, profile);
+  }
+
+  // Doctor Profile Methods
+  createDoctorProfile(profile: DoctorProfile): Observable<any> {
+    return this.http.post(`${this.DOCTOR_API_URL}/create-profile`, profile);
+  }
+
+  getDoctorProfile(userId: number): Observable<any> {
+    return this.http.get(`${this.DOCTOR_API_URL}/profile/${userId}`);
+  }
+
+  getDoctorDashboard(userId: number): Observable<any> {
+    return this.http.get(`${this.DOCTOR_API_URL}/dashboard/${userId}`);
+  }
+
+  updateDoctorProfile(id: number, profile: DoctorProfile): Observable<any> {
+    return this.http.put(`${this.DOCTOR_API_URL}/profile/${id}`, profile);
   }
 
   logout(): void {

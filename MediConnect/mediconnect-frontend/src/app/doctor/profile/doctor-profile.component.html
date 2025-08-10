@@ -1,0 +1,154 @@
+<div class="min-h-screen bg-gray-50 py-8">
+  <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="bg-white shadow-lg rounded-lg overflow-hidden">
+      <!-- Header -->
+      <div class="bg-gradient-to-r from-blue-600 to-indigo-700 px-6 py-8">
+        <div class="text-center">
+          <h1 class="text-3xl font-bold text-white">Complete Your Doctor Profile</h1>
+          <p class="mt-2 text-blue-100">Please provide your professional information to complete your profile</p>
+        </div>
+      </div>
+
+      <!-- Form -->
+      <div class="px-6 py-8">
+        <form [formGroup]="profileForm" (ngSubmit)="onSubmit()" class="space-y-6">
+          <!-- Personal Information -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label for="firstName" class="block text-sm font-medium text-gray-700 mb-2">First Name *</label>
+              <input pInputText id="firstName" formControlName="firstName" 
+                     class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                     placeholder="Enter your first name">
+              <small class="text-red-600" *ngIf="profileForm.get('firstName')?.invalid && profileForm.get('firstName')?.touched">
+                First name is required and must be at least 2 characters
+              </small>
+            </div>
+
+            <div>
+              <label for="lastName" class="block text-sm font-medium text-gray-700 mb-2">Last Name *</label>
+              <input pInputText id="lastName" formControlName="lastName" 
+                     class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                     placeholder="Enter your last name">
+              <small class="text-red-600" *ngIf="profileForm.get('lastName')?.invalid && profileForm.get('lastName')?.touched">
+                Last name is required and must be at least 2 characters
+              </small>
+            </div>
+          </div>
+
+          <!-- Professional Information -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label for="specialization" class="block text-sm font-medium text-gray-700 mb-2">Specialization *</label>
+              <input pInputText id="specialization" formControlName="specialization" 
+                     class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                     placeholder="e.g., Cardiology, Neurology, Pediatrics">
+              <small class="text-red-600" *ngIf="profileForm.get('specialization')?.invalid && profileForm.get('specialization')?.touched">
+                Specialization is required
+              </small>
+            </div>
+
+            <div>
+              <label for="licenseNumber" class="block text-sm font-medium text-gray-700 mb-2">Medical License Number *</label>
+              <input pInputText id="licenseNumber" formControlName="licenseNumber" 
+                     class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                     placeholder="Enter your medical license number">
+              <small class="text-red-600" *ngIf="profileForm.get('licenseNumber')?.invalid && profileForm.get('licenseNumber')?.touched">
+                License number is required
+              </small>
+            </div>
+          </div>
+
+          <!-- Contact Information -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label for="phoneNumber" class="block text-sm font-medium text-gray-700 mb-2">Phone Number *</label>
+              <input pInputText id="phoneNumber" formControlName="phoneNumber" 
+                     class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                     placeholder="Enter your phone number">
+              <small class="text-red-600" *ngIf="profileForm.get('phoneNumber')?.invalid && profileForm.get('phoneNumber')?.touched">
+                Valid 10-digit phone number is required
+              </small>
+            </div>
+
+            <div>
+              <label for="email" class="block text-sm font-medium text-gray-700 mb-2">Email *</label>
+              <input pInputText id="email" formControlName="email" type="email"
+                     class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                     placeholder="Enter your email address">
+              <small class="text-red-600" *ngIf="profileForm.get('email')?.invalid && profileForm.get('email')?.touched">
+                Valid email address is required
+              </small>
+            </div>
+          </div>
+
+          <!-- Experience and Education -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label for="experience" class="block text-sm font-medium text-gray-700 mb-2">Years of Experience *</label>
+              <input pInputText id="experience" formControlName="experience" type="number"
+                     class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                     placeholder="Enter years of experience">
+              <small class="text-red-600" *ngIf="profileForm.get('experience')?.invalid && profileForm.get('experience')?.touched">
+                Years of experience is required
+              </small>
+            </div>
+
+            <div>
+              <label for="education" class="block text-sm font-medium text-gray-700 mb-2">Education *</label>
+              <input pInputText id="education" formControlName="education" 
+                     class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                     placeholder="e.g., MBBS, MD, PhD">
+              <small class="text-red-600" *ngIf="profileForm.get('education')?.invalid && profileForm.get('education')?.touched">
+                Education details are required
+              </small>
+            </div>
+          </div>
+
+          <!-- Hospital and Address -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label for="hospital" class="block text-sm font-medium text-gray-700 mb-2">Hospital/Clinic *</label>
+              <input pInputText id="hospital" formControlName="hospital" 
+                     class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                     placeholder="Enter hospital or clinic name">
+              <small class="text-red-600" *ngIf="profileForm.get('hospital')?.invalid && profileForm.get('hospital')?.touched">
+                Hospital/clinic name is required
+              </small>
+            </div>
+
+            <div>
+              <label for="address" class="block text-sm font-medium text-gray-700 mb-2">Address *</label>
+              <input pInputText id="address" formControlName="address" 
+                     class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                     placeholder="Enter your complete address">
+              <small class="text-red-600" *ngIf="profileForm.get('address')?.invalid && profileForm.get('address')?.touched">
+                Complete address is required (minimum 10 characters)
+              </small>
+            </div>
+          </div>
+
+          <!-- Description -->
+          <div>
+            <label for="description" class="block text-sm font-medium text-gray-700 mb-2">Professional Description *</label>
+            <textarea pInputTextarea id="description" formControlName="description" rows="4"
+                      class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="Describe your expertise, achievements, and what makes you unique as a healthcare professional"></textarea>
+            <small class="text-red-600" *ngIf="profileForm.get('description')?.invalid && profileForm.get('description')?.touched">
+              Professional description is required (minimum 20 characters)
+            </small>
+          </div>
+
+          <!-- Submit Button -->
+          <div class="flex justify-end space-x-4 pt-6">
+            <button pButton type="button" label="Cancel" class="p-button-outlined p-button-secondary"
+                    (click)="router.navigate(['/home'])"></button>
+            <button pButton type="submit" label="Create Profile" 
+                    [disabled]="!profileForm.valid || loading"
+                    [loading]="loading"
+                    class="p-button-primary"></button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
