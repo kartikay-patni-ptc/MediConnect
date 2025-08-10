@@ -21,15 +21,35 @@ import java.util.function.Function;
 @Component
 public class JwtUtil {
 
-    private final Key signingKey;
+    private Key signingKey;
+    private final long expirationTime;
 
     /**
      * Constructor that initializes the signing key using a secret key from properties.
      *
      * @param base64Secret The Base64-encoded secret key loaded from application.properties/yml
+     * @param expirationTime The JWT expiration time in milliseconds
      */
-    public JwtUtil(@Value("${jwt.secret}") String base64Secret) {
-        this.signingKey = Keys.hmacShaKeyFor(Base64.getDecoder().decode(base64Secret));
+    public JwtUtil(@Value("${jwt.secret}") String base64Secret,
+                   @Value("${jwt.expiration}") long expirationTime) {
+        try {
+            this.signingKey = Keys.hmacShaKeyFor(Base64.getDecoder().decode(base64Secret));
+        } catch (IllegalArgumentException e) {
+            // Fallback: use the secret directly as bytes if Base64 decoding fails
+            byte[] keyBytes = base64Secret.getBytes();
+            // Ensure minimum key length for HS256 (256 bits = 32 bytes)
+            if (keyBytes.length < 32) {
+                byte[] newKeyBytes = new byte[32];
+                System.arraycopy(keyBytes, 0, newKeyBytes, 0, Math.min(keyBytes.length, 32));
+                // Fill remaining bytes with the original key repeated
+                for (int i = keyBytes.length; i < 32; i++) {
+                    newKeyBytes[i] = keyBytes[i % keyBytes.length];
+                }
+                keyBytes = newKeyBytes;
+            }
+            this.signingKey = Keys.hmacShaKeyFor(keyBytes);
+        }
+        this.expirationTime = expirationTime;
     }
 
     /**
@@ -100,7 +120,7 @@ public class JwtUtil {
                 .setClaims(claims)
                 .setSubject(subject)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60)) // 1 hour
+                .setExpiration(new Date(System.currentTimeMillis() + expirationTime))
                 .signWith(signingKey, SignatureAlgorithm.HS256)
                 .compact();
     }

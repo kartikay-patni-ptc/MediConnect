@@ -1,29 +1,30 @@
 package com.example.demo.model;
-
-
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "pharmacy")
+@Table(name = "doctor")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class PharmacyStore {
+public class Doctor {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(nullable = false)
-    private String name;
+    private String firstName;
 
     @Column(nullable = false)
-    private String ownerName;
+    private String lastName;
 
     @Column(nullable = false)
+    private String specialization;
+
+    @Column(nullable = false, unique = true)
     private String licenseNumber;
 
     @Column(nullable = false)
@@ -33,18 +34,21 @@ public class PharmacyStore {
     private String email;
 
     @Column(nullable = false)
+    private Integer experience;
+
+    @Column(nullable = false)
+    private String education;
+
+    @Column(nullable = false)
+    private String hospital;
+
+    @Column(nullable = false)
     private String address;
 
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    @Column(precision = 10)
-    private Double latitude;
-
-    @Column(precision = 11)
-    private Double longitude;
-
     @OneToOne
     @JoinColumn(name = "user_id", nullable = false, unique = true)
-    private com.example.demo.model.User user;
+    private User user;
 }

@@ -70,6 +70,8 @@ public class UserController {
             ));
         } catch (BadCredentialsException e) {
             return ResponseEntity.status(401).body(Map.of("error", "Invalid username or password."));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("error", "Login failed: " + e.getMessage()));
         }
     }
 
@@ -103,7 +105,7 @@ public class UserController {
         }
 
         try {
-            userService.saveUser(user);
+            userService.createUser(user);
             System.out.println("User registered successfully: " + user.getUsername());
             return ResponseEntity.ok(Map.of("message", "User registered successfully."));
         } catch (Exception e) {
@@ -122,14 +124,18 @@ public class UserController {
             return ResponseEntity.badRequest().body(Map.of("error", "Username is required."));
         }
 
-        User user = userService.findByUsername(username);
-        if (user == null) {
-            return ResponseEntity.badRequest().body(Map.of("error", "User not found with this username."));
-        }
+        try {
+            User user = userService.findByUsername(username);
+            if (user == null) {
+                return ResponseEntity.badRequest().body(Map.of("error", "User not found with this username."));
+            }
 
-        // For now, we'll just return a success message
-        // In a real application, you would send an email with reset link
-        return ResponseEntity.ok(Map.of("message", "Password reset instructions have been sent to your email."));
+            // For now, we'll just return a success message
+            // In a real application, you would send an email with reset link
+            return ResponseEntity.ok(Map.of("message", "Password reset instructions have been sent to your email."));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("error", "Failed to process request: " + e.getMessage()));
+        }
     }
 
     // === RESET PASSWORD ===
@@ -142,13 +148,17 @@ public class UserController {
             return ResponseEntity.badRequest().body(Map.of("error", "Username and new password are required."));
         }
 
-        User user = userService.findByUsername(username);
-        if (user == null) {
-            return ResponseEntity.badRequest().body(Map.of("error", "User not found."));
-        }
+        try {
+            User user = userService.findByUsername(username);
+            if (user == null) {
+                return ResponseEntity.badRequest().body(Map.of("error", "User not found."));
+            }
 
-        // Update password
-        userService.updatePassword(user, newPassword);
-        return ResponseEntity.ok(Map.of("message", "Password updated successfully."));
+            // Update password
+            userService.updatePassword(user, newPassword);
+            return ResponseEntity.ok(Map.of("message", "Password updated successfully."));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("error", "Failed to update password: " + e.getMessage()));
+        }
     }
 }

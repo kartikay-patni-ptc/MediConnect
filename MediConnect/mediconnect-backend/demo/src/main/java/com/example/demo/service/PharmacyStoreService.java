@@ -31,7 +31,7 @@ public class PharmacyStoreService {
         System.out.println("User found: " + user.getUsername());
 
         // Check if pharmacy store already exists for this user
-        Optional<PharmacyStore> existingStore = repository.findByUserId(user.getId());
+        Optional<PharmacyStore> existingStore = repository.findByUser(user);
         if (existingStore.isPresent()) {
             throw new RuntimeException("Pharmacy store already exists for this user");
         }
@@ -45,6 +45,15 @@ public class PharmacyStoreService {
         store.setEmail(dto.getEmail());
         store.setAddress(dto.getAddress());
         store.setDescription(dto.getDescription());
+
+        // Set coordinates from DTO (if provided)
+        if (dto.getLatitude() != null && dto.getLongitude() != null) {
+            store.setLatitude(dto.getLatitude());
+            store.setLongitude(dto.getLongitude());
+            System.out.println("Coordinates set from DTO: " + dto.getLatitude() + ", " + dto.getLongitude());
+        } else {
+            System.out.println("No coordinates provided in DTO");
+        }
         store.setUser(user);
 
         System.out.println("Saving pharmacy store...");
@@ -58,7 +67,11 @@ public class PharmacyStoreService {
     }
 
     public Optional<PharmacyStore> getStoreByUser(User user) {
-        return repository.findByUserId(user.getId());
+        return repository.findByUser(user);
+    }
+
+    public Optional<PharmacyStore> getStoreByUserId(Long userId) {
+        return repository.findByUserId(userId);
     }
 
     public Optional<PharmacyStore> getStoreById(Long id) {
@@ -77,6 +90,15 @@ public class PharmacyStoreService {
             store.setEmail(dto.getEmail());
             store.setAddress(dto.getAddress());
             store.setDescription(dto.getDescription());
+
+            // Update coordinates from DTO (if provided)
+            if (dto.getLatitude() != null && dto.getLongitude() != null) {
+                store.setLatitude(dto.getLatitude());
+                store.setLongitude(dto.getLongitude());
+                System.out.println("Updated coordinates from DTO: " + dto.getLatitude() + ", " + dto.getLongitude());
+            } else {
+                System.out.println("No coordinates provided in DTO for update");
+            }
 
             return repository.save(store);
         }

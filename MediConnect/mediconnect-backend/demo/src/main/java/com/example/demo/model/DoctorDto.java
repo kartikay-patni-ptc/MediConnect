@@ -1,17 +1,20 @@
 package com.example.demo.model;
 
+
 import lombok.Data;
 
 @Data
-public class PharmacyStoreDto {
-    private String name;
-    private String ownerName;
+public class DoctorDto {
+    private String firstName;
+    private String lastName;
+    private String specialization;
     private String licenseNumber;
     private String phoneNumber;
     private String email;
+    private Integer experience;
+    private String education;
+    private String hospital;
     private String address;
     private String description;
-    private Double latitude;
-    private Double longitude;
     private Long userId;
 }
