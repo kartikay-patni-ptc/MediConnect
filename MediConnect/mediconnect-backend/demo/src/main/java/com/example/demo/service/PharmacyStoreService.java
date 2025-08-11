@@ -15,7 +15,8 @@ public class PharmacyStoreService {
 
     @Autowired
     private PharmacyStoreRepository repository;
-
+    @Autowired
+    private GeocodingService geocodingService;
     @Autowired
     private UserService userService;
 
@@ -47,13 +48,9 @@ public class PharmacyStoreService {
         store.setDescription(dto.getDescription());
 
         // Set coordinates from DTO (if provided)
-        if (dto.getLatitude() != null && dto.getLongitude() != null) {
-            store.setLatitude(dto.getLatitude());
-            store.setLongitude(dto.getLongitude());
-            System.out.println("Coordinates set from DTO: " + dto.getLatitude() + ", " + dto.getLongitude());
-        } else {
-            System.out.println("No coordinates provided in DTO");
-        }
+        double[] coordinates = geocodingService.getCoordinates(dto.getAddress());
+        store.setLatitude(coordinates[0]);
+        store.setLongitude(coordinates[1]);
         store.setUser(user);
 
         System.out.println("Saving pharmacy store...");
@@ -92,13 +89,9 @@ public class PharmacyStoreService {
             store.setDescription(dto.getDescription());
 
             // Update coordinates from DTO (if provided)
-            if (dto.getLatitude() != null && dto.getLongitude() != null) {
-                store.setLatitude(dto.getLatitude());
-                store.setLongitude(dto.getLongitude());
-                System.out.println("Updated coordinates from DTO: " + dto.getLatitude() + ", " + dto.getLongitude());
-            } else {
-                System.out.println("No coordinates provided in DTO for update");
-            }
+            double[] coordinates = geocodingService.getCoordinates(dto.getAddress());
+            store.setLatitude(coordinates[0]);
+            store.setLongitude(coordinates[1]);
 
             return repository.save(store);
         }
