@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { tap } from 'rxjs/operators';
+import { tap, switchMap } from 'rxjs/operators';
 
 export interface LoginRequest {
   username: string;
@@ -162,5 +162,36 @@ export class AuthService {
       role: localStorage.getItem('role'),
       userId: parseInt(localStorage.getItem('userId') || '0')
     };
+  }
+  getUserId(): number {
+    return parseInt(localStorage.getItem('userId') || '0');
+  }
+
+  // Doctor Verification Methods
+  verifyDoctor(verificationData: any): Observable<any> {
+    return this.http.post(`${this.DOCTOR_API_URL}/verify`, verificationData);
+  }
+
+  // Patient Profile Methods
+  createPatientProfile(profile: any): Observable<any> {
+    return this.http.post('http://localhost:8080/api/patient/create-profile', profile);
+  }
+
+  getPatientProfile(userId: number): Observable<any> {
+    return this.http.get(`http://localhost:8080/api/patient/profile/${userId}`);
+  }
+
+  getPatientDashboard(userId: number): Observable<any> {
+    return this.http.get(`http://localhost:8080/api/patient/dashboard/${userId}`);
+  }
+
+  updatePatientProfile(id: number, profile: any): Observable<any> {
+    return this.http.put(`http://localhost:8080/api/patient/profile/${id}`, profile);
+  }
+
+  // Doctor Search Methods
+  searchDoctors(specialization?: string): Observable<any> {
+    const params = specialization ? { specialization } : {};
+    return this.http.get(`${this.DOCTOR_API_URL}/search`, { params: params as any });
   }
 }

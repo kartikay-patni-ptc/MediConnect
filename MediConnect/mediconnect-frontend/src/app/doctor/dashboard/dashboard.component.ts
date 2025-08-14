@@ -79,6 +79,7 @@ export class DashboardComponent implements OnInit {
   ngOnInit(): void {
     this.currentUser = this.authService.getCurrentUser();
     this.isSidebarOpen = localStorage.getItem('mc_sidebarOpen') !== 'false';
+    this.loadDoctorData();
 
     this.actionItems = [
       { label: 'New Appointment', icon: 'pi pi-plus', command: () => this.onNew() },
@@ -97,6 +98,47 @@ export class DashboardComponent implements OnInit {
     setTimeout(() => {
       this.loading = false;
     }, 500);
+  }
+
+  loadDoctorData(): void {
+    const userId = this.authService.getUserId();
+    if (userId) {
+      this.authService.getDoctorDashboard(userId).subscribe({
+        next: (response: any) => {
+          if (response.doctor) {
+            this.greeting = `Good ${this.getTimeOfDay()}, Dr. ${response.doctor.firstName} 👋`;
+            
+            // Update patient stats with real data
+            this.patientStats = {
+              totalPatients: response.totalPatients || 0,
+              newThisWeek: response.newThisWeek || 0,
+              awaiting: response.pendingAppointments || 0,
+            };
+            
+            // Update appointments with real data
+            if (response.appointments) {
+              this.upcomingAppointments = response.appointments.map((apt: any) => ({
+                id: apt.id,
+                patientName: apt.patientName,
+                time: apt.time,
+                type: apt.type,
+                status: apt.status
+              }));
+            }
+          }
+        },
+        error: (error) => {
+          console.error('Error loading doctor data:', error);
+        }
+      });
+    }
+  }
+
+  getTimeOfDay(): string {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'morning';
+    if (hour < 17) return 'afternoon';
+    return 'evening';
   }
 
   onNavClick(itemId: string): void {

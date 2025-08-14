@@ -54,10 +54,23 @@ export class LoginComponent implements OnInit {
               })
             );
           } else if (response.role === 'DOCTOR') {
+            // Clear any verification data from signup flow
+            localStorage.removeItem('verifiedDoctorName');
+            localStorage.removeItem('verifiedRegistrationNumber');
+            
             return this.authService.getDoctorProfile(response.userId).pipe(
               catchError(() => {
                 setTimeout(() => {
                   this.router.navigate(['/doctor/profile']);
+                }, 1500);
+                return of(null);
+              })
+            );
+          } else if (response.role === 'PATIENT') {
+            return this.authService.getPatientProfile(response.userId).pipe(
+              catchError(() => {
+                setTimeout(() => {
+                  this.router.navigate(['/patient/profile']);
                 }, 1500);
                 return of(null);
               })
@@ -77,13 +90,13 @@ export class LoginComponent implements OnInit {
             setTimeout(() => {
               this.router.navigate(['/doctor/dashboard']);
             }, 1500);
+          } else if (response && response.role === 'PATIENT') {
+            setTimeout(() => {
+              this.router.navigate(['/patient/dashboard']);
+            }, 1500);
           } else if (response) {
             setTimeout(() => {
-              if (response.role === 'PATIENT') {
-                this.router.navigate(['/patient/dashboard']);
-              } else {
-                this.router.navigate(['/home']);
-              }
+              this.router.navigate(['/home']);
             }, 1500);
           }
         },

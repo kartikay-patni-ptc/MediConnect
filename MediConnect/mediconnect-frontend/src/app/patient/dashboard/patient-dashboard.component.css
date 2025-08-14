@@ -13,3 +13,48 @@
 .content {
   padding: 2rem;
 } 
+
+:host ::ng-deep .p-card {
+  border-radius: 12px;
+}
+
+:host ::ng-deep .p-inputtext {
+  border-radius: 8px;
+}
+
+:host ::ng-deep .p-button {
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+}
+
+:host ::ng-deep .p-table {
+  border-radius: 8px;
+}
+
+.space-y-2 > * + * {
+  margin-top: 0.5rem;
+}
+
+.space-y-3 > * + * {
+  margin-top: 0.75rem;
+}
+
+.space-y-4 > * + * {
+  margin-top: 1rem;
+}
+
+.list-none {
+  list-style: none;
+}
+
+.p-0 {
+  padding: 0;
+}
+
+.m-0 {
+  margin: 0;
+}
+
+.text-sm {
+  font-size: 0.875rem;
+}

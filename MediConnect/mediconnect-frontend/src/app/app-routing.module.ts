@@ -6,6 +6,7 @@ export const routes: Routes = [
   { path: 'home', loadChildren: () => import('./home/home.module').then(m => m.HomeModule) },
   { path: 'auth', loadChildren: () => import('./auth/auth.module').then(m => m.AuthModule) },
   { path: 'doctor', loadChildren: () => import('./doctor/doctor.module').then(m => m.DoctorModule) },
+  { path: 'patient', loadChildren: () => import('./patient/patient.module').then(m => m.PatientModule) },
   { path: 'pharmacist', loadChildren: () => import('./pharmacist/pharmacist.module').then(m => m.PharmacistModule) },
   { path: '**', redirectTo: 'home' }
 ];

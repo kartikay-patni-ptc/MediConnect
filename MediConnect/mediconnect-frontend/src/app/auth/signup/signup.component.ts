@@ -102,23 +102,31 @@ export class SignupComponent implements OnInit {
       this.authService.register(userData).subscribe({
         next: (response: ApiResponse) => {
           this.loading = false;
-          
-          // Check if response has a message property (JSON response)
+
           const successMessage = response.message || 'Your account has been created! Please login.';
-          
+
           this.messageService.add({
             severity: 'success',
             summary: 'Signup Successful',
             detail: successMessage
           });
-          
+
+          // Store selected role before resetting the form
+          const selectedRole = this.signupForm.get('role')?.value;
+
           // Clear the form
           this.signupForm.reset();
-          
-          // Redirect to login for all users
-          // Pharmacists will be redirected to profile creation after login
+
           setTimeout(() => {
-            this.router.navigate(['/auth/login']);
+            if (selectedRole === 'DOCTOR') {
+              // Store user info temporarily for verification
+              localStorage.setItem('tempUserRole', selectedRole);
+              localStorage.setItem('tempUsername', userData.username);
+              localStorage.setItem('tempEmail', userData.email);
+              this.router.navigate(['/auth/verify-doctor']);
+            } else {
+              this.router.navigate(['/auth/login']);
+            }
           }, 2000);
         },
         error: (error: any) => {

@@ -1,0 +1,116 @@
+<div class="container mx-auto p-4">
+  <p-toast></p-toast>
+  
+  <div class="grid">
+    <div class="col-12">
+      <p-card header="Patient Profile" styleClass="shadow-2">
+        <form [formGroup]="profileForm" (ngSubmit)="onSubmit()" class="p-fluid">
+          <div class="grid">
+            <!-- First Name -->
+            <div class="col-12 md:col-6">
+              <label for="firstName" class="block text-900 font-medium mb-2">First Name *</label>
+              <input id="firstName" type="text" pInputText formControlName="firstName" 
+                     [class.ng-invalid]="profileForm.get('firstName')?.invalid && profileForm.get('firstName')?.touched">
+              <small class="p-error" *ngIf="profileForm.get('firstName')?.invalid && profileForm.get('firstName')?.touched">
+                First name is required
+              </small>
+            </div>
+
+            <!-- Last Name -->
+            <div class="col-12 md:col-6">
+              <label for="lastName" class="block text-900 font-medium mb-2">Last Name *</label>
+              <input id="lastName" type="text" pInputText formControlName="lastName"
+                     [class.ng-invalid]="profileForm.get('lastName')?.invalid && profileForm.get('lastName')?.touched">
+              <small class="p-error" *ngIf="profileForm.get('lastName')?.invalid && profileForm.get('lastName')?.touched">
+                Last name is required
+              </small>
+            </div>
+
+            <!-- Phone Number -->
+            <div class="col-12 md:col-6">
+              <label for="phoneNumber" class="block text-900 font-medium mb-2">Phone Number *</label>
+              <input id="phoneNumber" type="tel" pInputText formControlName="phoneNumber"
+                     [class.ng-invalid]="profileForm.get('phoneNumber')?.invalid && profileForm.get('phoneNumber')?.touched">
+              <small class="p-error" *ngIf="profileForm.get('phoneNumber')?.invalid && profileForm.get('phoneNumber')?.touched">
+                Phone number is required
+              </small>
+            </div>
+
+            <!-- Email -->
+            <div class="col-12 md:col-6">
+              <label for="email" class="block text-900 font-medium mb-2">Email *</label>
+              <input id="email" type="email" pInputText formControlName="email"
+                     [class.ng-invalid]="profileForm.get('email')?.invalid && profileForm.get('email')?.touched">
+              <small class="p-error" *ngIf="profileForm.get('email')?.invalid && profileForm.get('email')?.touched">
+                Valid email is required
+              </small>
+            </div>
+
+            <!-- Date of Birth -->
+            <div class="col-12 md:col-6">
+              <label for="dateOfBirth" class="block text-900 font-medium mb-2">Date of Birth *</label>
+              <p-calendar id="dateOfBirth" formControlName="dateOfBirth" 
+                         [showIcon]="true" dateFormat="dd/mm/yy"
+                         [class.ng-invalid]="profileForm.get('dateOfBirth')?.invalid && profileForm.get('dateOfBirth')?.touched">
+              </p-calendar>
+              <small class="p-error" *ngIf="profileForm.get('dateOfBirth')?.invalid && profileForm.get('dateOfBirth')?.touched">
+                Date of birth is required
+              </small>
+            </div>
+
+            <!-- Gender -->
+            <div class="col-12 md:col-6">
+              <label for="gender" class="block text-900 font-medium mb-2">Gender *</label>
+              <p-dropdown id="gender" formControlName="gender" 
+                         [options]="[
+                           {label: 'Male', value: 'Male'},
+                           {label: 'Female', value: 'Female'},
+                           {label: 'Other', value: 'Other'}
+                         ]" 
+                         placeholder="Select Gender"
+                         [class.ng-invalid]="profileForm.get('gender')?.invalid && profileForm.get('gender')?.touched">
+              </p-dropdown>
+              <small class="p-error" *ngIf="profileForm.get('gender')?.invalid && profileForm.get('gender')?.touched">
+                Gender is required
+              </small>
+            </div>
+
+            <!-- Address -->
+            <div class="col-12">
+              <label for="address" class="block text-900 font-medium mb-2">Address *</label>
+              <textarea id="address" pInputTextarea formControlName="address" rows="3"
+                        [class.ng-invalid]="profileForm.get('address')?.invalid && profileForm.get('address')?.touched">
+              </textarea>
+              <small class="p-error" *ngIf="profileForm.get('address')?.invalid && profileForm.get('address')?.touched">
+                Address is required
+              </small>
+            </div>
+
+            <!-- Emergency Contact -->
+            <div class="col-12 md:col-6">
+              <label for="emergencyContact" class="block text-900 font-medium mb-2">Emergency Contact</label>
+              <input id="emergencyContact" type="tel" pInputText formControlName="emergencyContact">
+            </div>
+
+            <!-- Medical History -->
+            <div class="col-12">
+              <label for="medicalHistory" class="block text-900 font-medium mb-2">Medical History</label>
+              <textarea id="medicalHistory" pInputTextarea formControlName="medicalHistory" rows="4"
+                        placeholder="Please provide any relevant medical history, allergies, or conditions...">
+              </textarea>
+            </div>
+          </div>
+
+          <!-- Submit Button -->
+          <div class="flex justify-content-end mt-4">
+            <p-button type="submit" 
+                      label="Create Profile"
+                      [loading]="loading"
+                      [disabled]="profileForm.invalid || loading">
+            </p-button>
+          </div>
+        </form>
+      </p-card>
+    </div>
+  </div>
+</div>

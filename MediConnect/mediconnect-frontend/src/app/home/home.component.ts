@@ -32,6 +32,9 @@ export class HomeComponent {
     } else if (this.currentUser?.role === 'PHARMACIST') {
       this.router.navigate(['/pharmacist/dashboard']);
     }
+    else if (this.currentUser?.role === 'PATIENT') {
+      this.router.navigate(['/patient/dashboard']);
+    }
   }
 
   logout() {

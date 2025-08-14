@@ -1,31 +1,72 @@
-<div class="verify-doctor-wrapper">
-  <p-card header="Doctor Verification" styleClass="verify-card">
-    <form [formGroup]="verifyForm" (ngSubmit)="onVerify()">
-      <div class="p-fluid p-formgrid p-grid">
-        <div class="p-field p-col-12">
-          <label for="name">Full Name</label>
-          <input id="name" pInputText formControlName="name" placeholder="Enter full name" />
+<div class="container mx-auto p-4">
+  <p-toast></p-toast>
+  
+  <div class="grid justify-content-center">
+    <div class="col-12 md:col-8 lg:col-6">
+      <p-card header="Doctor Verification" styleClass="shadow-2">
+        <div class="text-center mb-4">
+          <i class="pi pi-user-md text-6xl text-primary mb-3"></i>
+          <h2 class="text-2xl font-bold text-900 mb-2">Verify Your Credentials</h2>
+          <p class="text-600">Please provide your medical registration details for verification</p>
         </div>
 
-        <div class="p-field p-col-12">
-          <label for="council">Medical Council</label>
-          <input id="council" pInputText formControlName="council" placeholder="e.g. Maharashtra Medical Council" />
-        </div>
+        <form [formGroup]="verificationForm" (ngSubmit)="onSubmit()" class="p-fluid">
+          <!-- Full Name -->
+          <div class="mb-4">
+            <label for="fullName" class="block text-900 font-medium mb-2">Full Name *</label>
+            <input id="fullName" type="text" pInputText formControlName="fullName" 
+                   placeholder="Enter your full name as registered"
+                   [class.ng-invalid]="verificationForm.get('fullName')?.invalid && verificationForm.get('fullName')?.touched">
+            <small class="p-error" *ngIf="verificationForm.get('fullName')?.invalid && verificationForm.get('fullName')?.touched">
+              Full name is required
+            </small>
+          </div>
 
-        <div class="p-field p-col-12">
-          <label for="registrationNumber">Registration Number</label>
-          <input id="registrationNumber" pInputText formControlName="registrationNumber" placeholder="e.g. 123456" />
-        </div>
+          <!-- Registration Number -->
+          <div class="mb-4">
+            <label for="registrationNumber" class="block text-900 font-medium mb-2">Registration Number *</label>
+            <input id="registrationNumber" type="text" pInputText formControlName="registrationNumber" 
+                   placeholder="Enter your medical registration number"
+                   [class.ng-invalid]="verificationForm.get('registrationNumber')?.invalid && verificationForm.get('registrationNumber')?.touched">
+            <small class="p-error" *ngIf="verificationForm.get('registrationNumber')?.invalid && verificationForm.get('registrationNumber')?.touched">
+              Registration number is required
+            </small>
+          </div>
 
-        <div class="p-field p-col-12">
-          <label for="year">Year of Registration (optional)</label>
-          <input id="year" pInputText formControlName="year" placeholder="e.g. 2020" />
-        </div>
+          <!-- Submit Button -->
+          <div class="flex gap-3 mt-4">
+            <p-button type="button" 
+                      label="Back" 
+                      icon="pi pi-arrow-left"
+                      severity="secondary"
+                      (onClick)="goBack()"
+                      [disabled]="isLoading"
+                      class="flex-1">
+            </p-button>
+            <p-button type="submit" 
+                      label="Verify Credentials" 
+                      icon="pi pi-check"
+                      [loading]="isLoading"
+                      [disabled]="verificationForm.invalid || isLoading"
+                      class="flex-1">
+            </p-button>
+          </div>
+        </form>
 
-        <div class="p-field p-col-12">
-          <button pButton type="submit" label="Verify Doctor" class="p-button-success" [disabled]="verifyForm.invalid"></button>
+        <!-- Information Box -->
+        <div class="mt-4 p-3 bg-blue-50 border-round">
+          <div class="flex align-items-start gap-2">
+            <i class="pi pi-info-circle text-blue-500 mt-1"></i>
+            <div>
+              <h4 class="text-blue-900 font-medium mb-1">Verification Process</h4>
+              <p class="text-blue-700 text-sm m-0">
+                Your credentials will be verified against official medical council databases. 
+                This process ensures the authenticity of medical professionals on our platform.
+              </p>
+            </div>
+          </div>
         </div>
-      </div>
-    </form>
-  </p-card>
+      </p-card>
+    </div>
+  </div>
 </div>

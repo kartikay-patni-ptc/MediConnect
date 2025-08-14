@@ -24,6 +24,7 @@ export class DoctorProfileComponent implements OnInit {
   ngOnInit(): void {
     this.currentUser = this.authService.getCurrentUser();
     this.initForm();
+    this.loadVerificationData();
   }
 
   initForm() {
@@ -42,6 +43,31 @@ export class DoctorProfileComponent implements OnInit {
     });
   }
 
+  loadVerificationData() {
+    // Check if doctor was verified during signup
+    const verifiedDoctorName = localStorage.getItem('verifiedDoctorName');
+    const verifiedRegistrationNumber = localStorage.getItem('verifiedRegistrationNumber');
+    
+    if (verifiedDoctorName && verifiedRegistrationNumber) {
+      console.log('Loading verification data:', { verifiedDoctorName, verifiedRegistrationNumber });
+      
+      // Split the full name into first and last name
+      const nameParts = verifiedDoctorName.trim().split(' ');
+      if (nameParts.length >= 2) {
+        const firstName = nameParts[0];
+        const lastName = nameParts.slice(1).join(' '); // Handle multiple last names
+        
+        this.profileForm.patchValue({
+          firstName: firstName,
+          lastName: lastName,
+          licenseNumber: verifiedRegistrationNumber
+        });
+        
+        console.log('Pre-filled form with verification data');
+      }
+    }
+  }
+
   onSubmit() {
     if (this.profileForm.valid) {
       this.loading = true;
@@ -54,6 +80,11 @@ export class DoctorProfileComponent implements OnInit {
       this.authService.createDoctorProfile(profileData).subscribe({
         next: (response: any) => {
           this.loading = false;
+          
+          // Clear verification data after successful profile creation
+          localStorage.removeItem('verifiedDoctorName');
+          localStorage.removeItem('verifiedRegistrationNumber');
+          localStorage.removeItem('doctorVerificationStatus');
           
           this.messageService.add({
             severity: 'success',
