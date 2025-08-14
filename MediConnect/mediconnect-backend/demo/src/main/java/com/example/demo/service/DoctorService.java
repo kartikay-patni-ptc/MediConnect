@@ -1,6 +1,7 @@
 package com.example.demo.service;
 import com.example.demo.model.Doctor;
 import com.example.demo.model.DoctorDto;
+import com.example.demo.model.DoctorVerificationRequest;
 import com.example.demo.model.User;
 import com.example.demo.repository.DoctorRepository;
 import com.example.demo.service.UserService;
@@ -9,6 +10,9 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.HashSet;
+import java.util.ArrayList;
 
 @Service
 public class DoctorService {
@@ -18,6 +22,9 @@ public class DoctorService {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private DoctorVerificationService verificationService;
 
     public Doctor createDoctorProfile(DoctorDto dto) {
         System.out.println("=== CREATING DOCTOR PROFILE ===");
@@ -49,9 +56,28 @@ public class DoctorService {
         doctor.setDescription(dto.getDescription());
         doctor.setUser(user);
 
+        // Check if this doctor was previously verified during signup
+        if (dto.getWasVerified() != null && dto.getWasVerified()) {
+            doctor.setIsVerified(true);
+            doctor.setRegistrationNumber(dto.getLicenseNumber());
+            System.out.println("Doctor was verified during signup, setting verified status to true");
+        } else {
+            // Fallback: check with NMC API if verification status not provided
+            String fullName = dto.getFirstName() + " " + dto.getLastName();
+            if (isDoctorVerified(fullName, dto.getLicenseNumber())) {
+                doctor.setIsVerified(true);
+                doctor.setRegistrationNumber(dto.getLicenseNumber());
+                System.out.println("Doctor verified via NMC API, setting verified status to true");
+            } else {
+                doctor.setIsVerified(false);
+                System.out.println("Doctor not verified, setting verified status to false");
+            }
+        }
+
         System.out.println("Saving doctor profile...");
         Doctor savedDoctor = repository.save(doctor);
         System.out.println("Doctor profile saved with ID: " + savedDoctor.getId());
+        System.out.println("Verification status: " + savedDoctor.getIsVerified());
         return savedDoctor;
     }
 
@@ -91,5 +117,88 @@ public class DoctorService {
             return repository.save(doctor);
         }
         throw new RuntimeException("Doctor profile not found with id: " + id);
+    }
+
+    public boolean verifyDoctor(DoctorVerificationRequest request) {
+        System.out.println("=== DOCTOR SERVICE: VERIFYING DOCTOR ===");
+        System.out.println("User ID: " + request.getUserId());
+        System.out.println("Full Name: " + request.getFullName());
+        System.out.println("Registration Number: " + request.getRegistrationNumber());
+
+        boolean isVerified = verificationService.verifyDoctor(request);
+        System.out.println("Verification result: " + isVerified);
+
+        // Note: Verification status will be applied when profile is created
+        // This method is now just for checking verification status
+
+        return isVerified;
+    }
+
+    public List<Doctor> searchDoctorsBySpecialization(String searchTerm) {
+        System.out.println("=== SEARCHING DOCTORS FROM DATABASE ===");
+        System.out.println("Search term: " + searchTerm);
+
+        if (searchTerm == null || searchTerm.trim().isEmpty()) {
+            System.out.println("No search term provided, returning all doctors");
+            List<Doctor> allDoctors = repository.findAll();
+            System.out.println("Found " + allDoctors.size() + " doctors");
+            return allDoctors;
+        }
+
+        // Search by specialization first
+        List<Doctor> specializationResults = repository.findBySpecializationContainingIgnoreCase(searchTerm);
+        System.out.println("Found " + specializationResults.size() + " doctors by specialization");
+
+        // Search by name (first name or last name)
+        List<Doctor> nameResults = repository.findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(searchTerm, searchTerm);
+        System.out.println("Found " + nameResults.size() + " doctors by name");
+
+        // Combine results and remove duplicates
+        Set<Doctor> uniqueDoctors = new HashSet<>();
+        uniqueDoctors.addAll(specializationResults);
+        uniqueDoctors.addAll(nameResults);
+
+        List<Doctor> combinedResults = new ArrayList<>(uniqueDoctors);
+
+        // Sort by experience (descending) as requested
+        combinedResults.sort((d1, d2) -> {
+            if (d1.getExperience() == null) return 1;
+            if (d2.getExperience() == null) return -1;
+            return d2.getExperience().compareTo(d1.getExperience());
+        });
+
+        System.out.println("Total unique doctors found: " + combinedResults.size());
+
+        // Log found doctors for debugging
+        for (Doctor doctor : combinedResults) {
+            System.out.println("Doctor: " + doctor.getFirstName() + " " + doctor.getLastName() +
+                    " - " + doctor.getSpecialization() +
+                    " - " + doctor.getExperience() + " years" +
+                    " (Verified: " + doctor.getIsVerified() + ")");
+        }
+
+        return combinedResults;
+    }
+
+    private boolean isDoctorVerified(String fullName, String licenseNumber) {
+        try {
+            System.out.println("=== CHECKING IF DOCTOR WAS PREVIOUSLY VERIFIED ===");
+            System.out.println("Full Name: " + fullName);
+            System.out.println("License Number: " + licenseNumber);
+
+            // Create a verification request to check with NMC API
+            DoctorVerificationRequest request = new DoctorVerificationRequest();
+            request.setFullName(fullName);
+            request.setRegistrationNumber(licenseNumber);
+            request.setUserId(0L); // Not needed for verification check
+
+            boolean isVerified = verificationService.verifyDoctor(request);
+            System.out.println("Verification check result: " + isVerified);
+            return isVerified;
+
+        } catch (Exception e) {
+            System.err.println("Error checking doctor verification: " + e.getMessage());
+            return false;
+        }
     }
 }

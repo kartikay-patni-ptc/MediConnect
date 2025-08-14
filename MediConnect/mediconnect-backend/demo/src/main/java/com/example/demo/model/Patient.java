@@ -1,15 +1,16 @@
 package com.example.demo.model;
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "doctor")
+@Table(name = "patient")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Doctor {
+public class Patient {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,38 +23,25 @@ public class Doctor {
     private String lastName;
 
     @Column(nullable = false)
-    private String specialization;
-
-    @Column(nullable = false, unique = true)
-    private String licenseNumber;
-
-    @Column(nullable = false)
     private String phoneNumber;
 
     @Column(nullable = false)
     private String email;
 
     @Column(nullable = false)
-    private Integer experience;
+    private String dateOfBirth;
 
     @Column(nullable = false)
-    private String education;
-
-    @Column(nullable = false)
-    private String hospital;
+    private String gender;
 
     @Column(nullable = false)
     private String address;
 
-    @Column(columnDefinition = "TEXT")
-    private String description;
-
-    // New fields for doctor verification
-    @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
-    private Boolean isVerified = false;
+    @Column(nullable = true)
+    private String emergencyContact;
 
     @Column(nullable = true)
-    private String registrationNumber;
+    private String medicalHistory;
 
     @OneToOne
     @JoinColumn(name = "user_id", nullable = false, unique = true)

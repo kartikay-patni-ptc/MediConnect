@@ -17,4 +17,5 @@ public class DoctorDto {
     private String address;
     private String description;
     private Long userId;
+    private Boolean wasVerified;
 }
