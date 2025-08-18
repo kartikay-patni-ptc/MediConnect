@@ -1,0 +1,322 @@
+<div class="prescription-list-container">
+  <p-toast></p-toast>
+
+  <!-- Header -->
+  <div class="bg-white rounded-lg shadow-sm mb-6 p-6">
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-3xl font-bold text-gray-800 mb-2">
+          <i class="pi pi-list text-primary mr-3"></i>
+          {{ userRole === 'DOCTOR' ? 'My Prescriptions' : 'My Prescription History' }}
+        </h1>
+        <p class="text-gray-600">
+          {{ userRole === 'DOCTOR' ? 'Manage all prescriptions you have written' : 'View and manage your prescriptions' }}
+        </p>
+      </div>
+      <div class="flex gap-3">
+        <p-button 
+          icon="pi pi-refresh" 
+          severity="secondary"
+          [outlined]="true"
+          (onClick)="refreshList()"
+          pTooltip="Refresh List">
+        </p-button>
+        <p-button 
+          *ngIf="userRole === 'DOCTOR'"
+          label="Write Prescription" 
+          icon="pi pi-plus"
+          (onClick)="createPrescription()">
+        </p-button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="bg-white rounded-lg shadow-sm mb-6 p-4">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      
+      <!-- Search -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Search</label>
+        <span class="p-input-icon-left w-full">
+          <i class="pi pi-search"></i>
+          <input 
+            pInputText 
+            [(ngModel)]="searchTerm"
+            (ngModelChange)="onFilterChange()"
+            placeholder="Search by prescription number, diagnosis, doctor, or patient..."
+            class="w-full">
+        </span>
+      </div>
+
+      <!-- Status Filter -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+        <p-dropdown 
+          [(ngModel)]="statusFilter"
+          [options]="statusOptions"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Filter by status"
+          (onChange)="onFilterChange()"
+          class="w-full">
+        </p-dropdown>
+      </div>
+
+      <!-- Results Count -->
+      <div class="flex items-end">
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 w-full">
+          <div class="text-sm text-blue-600 font-medium">
+            Showing {{ filteredPrescriptions.length }} of {{ totalRecords }} prescriptions
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Prescriptions Table -->
+  <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+    <p-table 
+      [value]="filteredPrescriptions" 
+      [loading]="loading"
+      [paginator]="true"
+      [rows]="rows"
+      [first]="first"
+      [totalRecords]="filteredPrescriptions.length"
+      (onPage)="onPageChange($event)"
+      [rowsPerPageOptions]="[10, 25, 50]"
+      [responsive]="true"
+      styleClass="p-datatable-striped">
+      
+      <!-- Table Header -->
+      <ng-template pTemplate="header">
+        <tr>
+          <th style="width: 15%">Prescription #</th>
+          <th style="width: 15%">Date</th>
+          <th *ngIf="userRole === 'PATIENT'" style="width: 15%">Doctor</th>
+          <th *ngIf="userRole === 'DOCTOR'" style="width: 15%">Patient</th>
+          <th style="width: 20%">Diagnosis</th>
+          <th style="width: 10%">Medicines</th>
+          <th style="width: 10%">Status</th>
+          <th style="width: 10%">Valid Until</th>
+          <th style="width: 15%">Actions</th>
+        </tr>
+      </ng-template>
+
+      <!-- Table Body -->
+      <ng-template pTemplate="body" let-prescription>
+        <tr>
+          <!-- Prescription Number -->
+          <td>
+            <span class="prescription-number">
+              {{ prescription.prescriptionNumber }}
+            </span>
+          </td>
+
+          <!-- Date -->
+          <td>
+            <div class="text-sm">
+              <div class="font-medium">{{ formatDate(prescription.issuedDate) }}</div>
+              <div class="text-gray-500">{{ formatDateTime(prescription.createdAt).split(',')[1] }}</div>
+            </div>
+          </td>
+
+          <!-- Doctor (for patients) -->
+          <td *ngIf="userRole === 'PATIENT'">
+            <div class="flex items-center gap-2">
+              <i class="pi pi-user-md text-blue-600"></i>
+              <span class="font-medium">{{ getDoctorName(prescription) }}</span>
+            </div>
+          </td>
+
+          <!-- Patient (for doctors) -->
+          <td *ngIf="userRole === 'DOCTOR'">
+            <div class="flex items-center gap-2">
+              <i class="pi pi-user text-green-600"></i>
+              <span class="font-medium">{{ getPatientName(prescription) }}</span>
+            </div>
+          </td>
+
+          <!-- Diagnosis -->
+          <td>
+            <div class="max-w-xs">
+              <p class="text-sm font-medium line-clamp-2">{{ prescription.diagnosis }}</p>
+              <p class="text-xs text-gray-500 mt-1 line-clamp-1">{{ prescription.symptoms }}</p>
+            </div>
+          </td>
+
+          <!-- Medicine Count -->
+          <td>
+            <p-tag 
+              [value]="getMedicineCount(prescription) + ' items'"
+              severity="info"
+              icon="pi pi-pills">
+            </p-tag>
+          </td>
+
+          <!-- Status -->
+          <td>
+            <div class="flex flex-col gap-1">
+              <p-tag 
+                [value]="prescription.status"
+                [severity]="getStatusSeverity(prescription.status)"
+                [icon]="getStatusIcon(prescription.status)">
+              </p-tag>
+              
+              <!-- Expiry Warning -->
+              <div *ngIf="isExpiringSoon(prescription)" class="text-xs text-orange-600">
+                <i class="pi pi-exclamation-triangle mr-1"></i>
+                Expires in {{ getDaysUntilExpiry(prescription) }} days
+              </div>
+              
+              <div *ngIf="isExpired(prescription)" class="text-xs text-red-600">
+                <i class="pi pi-times-circle mr-1"></i>
+                Expired
+              </div>
+            </div>
+          </td>
+
+          <!-- Valid Until -->
+          <td>
+            <div class="text-sm">
+              <div [class]="isExpired(prescription) ? 'text-red-600 font-semibold' : isExpiringSoon(prescription) ? 'text-orange-600 font-medium' : 'text-gray-600'">
+                {{ formatDate(prescription.validUntil) }}
+              </div>
+            </div>
+          </td>
+
+          <!-- Actions -->
+          <td>
+            <div class="flex items-center gap-2">
+              <!-- View -->
+              <p-button 
+                icon="pi pi-eye" 
+                size="small"
+                severity="info"
+                [outlined]="true"
+                (onClick)="viewPrescription(prescription)"
+                pTooltip="View Details">
+              </p-button>
+
+              <!-- Download -->
+              <p-button 
+                *ngIf="prescription.prescriptionImageUrl"
+                icon="pi pi-download" 
+                size="small"
+                severity="secondary"
+                [outlined]="true"
+                (onClick)="downloadPrescription(prescription)"
+                pTooltip="Download File">
+              </p-button>
+
+              <!-- Order Medicines (for patients) -->
+              <p-button 
+                *ngIf="userRole === 'PATIENT' && prescription.status === 'ACTIVE'"
+                icon="pi pi-shopping-cart" 
+                size="small"
+                severity="success"
+                [outlined]="true"
+                (onClick)="orderMedicines(prescription)"
+                pTooltip="Order Medicines">
+              </p-button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+
+      <!-- Empty State -->
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td [attr.colspan]="userRole === 'DOCTOR' ? 8 : 8" class="text-center py-8">
+            <div class="flex flex-col items-center gap-3">
+              <i class="pi pi-inbox text-4xl text-gray-400"></i>
+              <div class="text-lg font-medium text-gray-600">No Prescriptions Found</div>
+              <div class="text-sm text-gray-500">
+                {{ filteredPrescriptions.length === 0 && prescriptions.length > 0 
+                   ? 'Try adjusting your filters to see more results.' 
+                   : userRole === 'DOCTOR' 
+                     ? 'You haven\'t written any prescriptions yet.' 
+                     : 'You don\'t have any prescriptions yet.' }}
+              </div>
+              <p-button 
+                *ngIf="userRole === 'DOCTOR' && prescriptions.length === 0"
+                label="Write Your First Prescription" 
+                icon="pi pi-plus"
+                (onClick)="createPrescription()">
+              </p-button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+
+      <!-- Loading Template -->
+      <ng-template pTemplate="loadingbody">
+        <tr>
+          <td [attr.colspan]="userRole === 'DOCTOR' ? 8 : 8" class="text-center py-8">
+            <div class="flex items-center justify-center gap-2">
+              <p-progressSpinner [style]="{width: '30px', height: '30px'}"></p-progressSpinner>
+              <span class="text-gray-600">Loading prescriptions...</span>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+
+  <!-- Quick Stats (for doctors) -->
+  <div *ngIf="userRole === 'DOCTOR'" class="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
+    <div class="bg-white rounded-lg shadow-sm p-4">
+      <div class="flex items-center gap-3">
+        <div class="bg-blue-100 p-3 rounded-full">
+          <i class="pi pi-file-edit text-blue-600 text-xl"></i>
+        </div>
+        <div>
+          <div class="text-2xl font-bold text-gray-800">{{ prescriptions.length }}</div>
+          <div class="text-sm text-gray-600">Total Prescriptions</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-sm p-4">
+      <div class="flex items-center gap-3">
+        <div class="bg-green-100 p-3 rounded-full">
+          <i class="pi pi-check-circle text-green-600 text-xl"></i>
+        </div>
+        <div>
+          <div class="text-2xl font-bold text-gray-800">
+            {{ getActiveCount() }}
+          </div>
+          <div class="text-sm text-gray-600">Active Prescriptions</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-sm p-4">
+      <div class="flex items-center gap-3">
+        <div class="bg-orange-100 p-3 rounded-full">
+          <i class="pi pi-clock text-orange-600 text-xl"></i>
+        </div>
+        <div>
+          <div class="text-2xl font-bold text-gray-800">
+            {{ getExpiringSoonCount() }}
+          </div>
+          <div class="text-sm text-gray-600">Expiring Soon</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-sm p-4">
+      <div class="flex items-center gap-3">
+        <div class="bg-red-100 p-3 rounded-full">
+          <i class="pi pi-times-circle text-red-600 text-xl"></i>
+        </div>
+        <div>
+          <div class="text-2xl font-bold text-gray-800">
+            {{ getExpiredCount() }}
+          </div>
+          <div class="text-sm text-gray-600">Expired</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

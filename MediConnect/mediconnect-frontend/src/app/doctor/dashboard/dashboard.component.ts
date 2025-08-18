@@ -11,6 +11,23 @@ interface Appointment {
   time: string;
   type: 'Consultation' | 'Follow-up' | 'Surgery' | 'Diagnostic';
   status: 'Upcoming' | 'In Progress' | 'Completed' | 'Cancelled';
+  notes?: string;
+  aiSummary?: { // This will now hold patientAdvice
+    answer: string;
+    homeRemedies?: string;
+    riskLevel: 'Low' | 'Medium' | 'High' | 'Critical';
+    redFlags?: string;
+    specializationHint?: string;
+    specialists?: string[];
+  };
+  doctorSummary?: any; // Can be string or structured object
+  // New AI consultation fields
+  patientAdvice?: string;
+  prescribedMedicines?: { name: string; dose: string; frequency: string; duration: string; otcOrPrescription: string; }[];
+  riskLevel?: string;
+  redFlags?: string[];
+  homeRemedies?: string[];
+  specializationHint?: string;
 }
 
 interface NavItem { id: string; label: string; icon: string; }
@@ -27,6 +44,9 @@ export class DashboardComponent implements OnInit {
   searchQuery = '';
   loading = true;
   currentUser: any;
+  showAppointmentDialog = false;
+  selectedAppointment: Appointment | null = null;
+  completedAppointments = 0;
 
   greeting = 'Good afternoon, Dr. Onichaan 👋';
 
@@ -45,7 +65,8 @@ export class DashboardComponent implements OnInit {
     { id: 'dashboard', label: 'Dashboard', icon: 'pi pi-home' },
     { id: 'patients', label: 'Patients', icon: 'pi pi-users' },
     { id: 'appointments', label: 'Appointments', icon: 'pi pi-calendar' },
-    { id: 'upload', label: 'Upload Prescription', icon: 'pi pi-upload' },
+    { id: 'prescriptions', label: 'My Prescriptions', icon: 'pi pi-list' },
+    { id: 'write-prescription', label: 'Write Prescription', icon: 'pi pi-pencil' },
     { id: 'messages', label: 'Messages', icon: 'pi pi-envelope' },
     { id: 'settings', label: 'Settings', icon: 'pi pi-cog' }
   ];
@@ -64,10 +85,107 @@ export class DashboardComponent implements OnInit {
   };
 
   upcomingAppointments: Appointment[] = [
-    { id: 'APT-1012', patientName: 'Sophia Patel', time: 'Today, 03:00 PM', type: 'Consultation', status: 'Upcoming' },
-    { id: 'APT-1013', patientName: 'Liam Johnson', time: 'Tomorrow, 10:00 AM', type: 'Follow-up', status: 'Upcoming' },
-    { id: 'APT-1014', patientName: 'Ava Martinez', time: 'Aug 12, 09:30 AM', type: 'Diagnostic', status: 'Upcoming' },
-    { id: 'APT-1015', patientName: 'Noah Williams', time: 'Aug 13, 02:00 PM', type: 'Consultation', status: 'Upcoming' },
+    { 
+      id: 'APT-1012', 
+      patientName: 'Sophia Patel', 
+      time: 'Today, 03:00 PM', 
+      type: 'Consultation', 
+      status: 'Upcoming',
+      notes: 'Patient experiencing chest pain and shortness of breath',
+      aiSummary: {
+        answer: 'Based on the symptoms described, this could be related to cardiovascular issues. The patient reports chest pain and shortness of breath which are concerning symptoms that require immediate medical attention.',
+        homeRemedies: 'Rest, avoid strenuous activity, and monitor symptoms closely. If symptoms worsen, seek emergency care immediately.',
+        riskLevel: 'High',
+        redFlags: 'Chest pain, shortness of breath, dizziness, nausea - these are emergency symptoms that require immediate medical evaluation.',
+        specializationHint: 'Cardiology consultation recommended',
+        specialists: ['Cardiologist', 'Emergency Medicine']
+      },
+      doctorSummary: {
+        chiefComplaint: 'Chest pain and shortness of breath',
+        historyOfPresentIllness: 'Patient experiencing chest pain and shortness of breath for 2 days',
+        medicalHistory: 'No known cardiac history',
+        assessment: 'Possible cardiovascular issue requiring immediate evaluation',
+        plan: 'ECG and blood work pending, cardiology consultation recommended',
+        prescribedMedicines: [],
+        redFlags: ['Chest pain', 'Shortness of breath'],
+        specialistRecommendation: 'Cardiology'
+      }
+    },
+    { 
+      id: 'APT-1013', 
+      patientName: 'Liam Johnson', 
+      time: 'Tomorrow, 10:00 AM', 
+      type: 'Follow-up', 
+      status: 'Upcoming',
+      notes: 'Follow-up for hypertension management',
+      aiSummary: {
+        answer: 'Regular follow-up for hypertension management is important. Monitor blood pressure readings and medication compliance.',
+        homeRemedies: 'Maintain low-sodium diet, regular exercise, stress management techniques, and consistent medication schedule.',
+        riskLevel: 'Medium',
+        specializationHint: 'Cardiology follow-up',
+        specialists: ['Cardiologist', 'Primary Care']
+      },
+      doctorSummary: {
+        chiefComplaint: 'Hypertension management follow-up',
+        historyOfPresentIllness: 'Patient reports stable blood pressure on current medication',
+        medicalHistory: 'Known hypertension, no other chronic conditions',
+        assessment: 'Well-controlled hypertension, medication effective',
+        plan: 'Continue current medication, follow-up scheduled for next month',
+        prescribedMedicines: [],
+        redFlags: [],
+        specialistRecommendation: 'Primary Care'
+      }
+    },
+    { 
+      id: 'APT-1014', 
+      patientName: 'Ava Martinez', 
+      time: 'Aug 12, 09:30 AM', 
+      type: 'Diagnostic', 
+      status: 'Upcoming',
+      notes: 'Routine ECG and blood work',
+      aiSummary: {
+        answer: 'Routine diagnostic tests for cardiovascular health assessment. Standard procedure for monitoring heart function.',
+        riskLevel: 'Low',
+        specializationHint: 'Cardiology diagnostics',
+        specialists: ['Cardiologist']
+      },
+      doctorSummary: {
+        chiefComplaint: 'Routine cardiovascular health assessment',
+        historyOfPresentIllness: 'Patient reports normal ECG and blood work results',
+        medicalHistory: 'No known cardiac conditions',
+        assessment: 'Normal cardiovascular function, no immediate concerns',
+        plan: 'Continue routine monitoring, annual follow-up recommended',
+        prescribedMedicines: [],
+        redFlags: [],
+        specialistRecommendation: 'Cardiology'
+      }
+    },
+    { 
+      id: 'APT-1015', 
+      patientName: 'Noah Williams', 
+      time: 'Aug 13, 02:00 PM', 
+      type: 'Consultation', 
+      status: 'Upcoming',
+      notes: 'New patient consultation for heart palpitations',
+      aiSummary: {
+        answer: 'Heart palpitations can have various causes including stress, caffeine, or underlying heart conditions. Requires thorough evaluation.',
+        homeRemedies: 'Reduce caffeine intake, practice stress reduction techniques, maintain regular sleep schedule.',
+        riskLevel: 'Medium',
+        redFlags: 'If accompanied by chest pain, shortness of breath, or fainting, seek immediate medical attention.',
+        specializationHint: 'Cardiology consultation',
+        specialists: ['Cardiologist', 'Electrophysiologist']
+      },
+      doctorSummary: {
+        chiefComplaint: 'Heart palpitations',
+        historyOfPresentIllness: 'Patient reports new onset heart palpitations',
+        medicalHistory: 'No known cardiac conditions',
+        assessment: 'Heart palpitations requiring evaluation to determine cause',
+        plan: 'ECG and EKG scheduled for tomorrow, cardiology consultation recommended',
+        prescribedMedicines: [],
+        redFlags: ['Heart palpitations'],
+        specialistRecommendation: 'Cardiology'
+      }
+    },
   ];
 
   constructor(
@@ -84,6 +202,7 @@ export class DashboardComponent implements OnInit {
     this.actionItems = [
       { label: 'New Appointment', icon: 'pi pi-plus', command: () => this.onNew() },
       { label: 'Export CSV', icon: 'pi pi-download', command: () => this.exportCsv() },
+      { label: 'Manage Slots', icon: 'pi pi-clock', command: () => this.manageSlots() },
     ];
 
     this.menuItems = [
@@ -117,14 +236,93 @@ export class DashboardComponent implements OnInit {
             
             // Update appointments with real data
             if (response.appointments) {
-              this.upcomingAppointments = response.appointments.map((apt: any) => ({
-                id: apt.id,
-                patientName: apt.patientName,
-                time: apt.time,
-                type: apt.type,
-                status: apt.status
-              }));
+              this.upcomingAppointments = response.appointments.map((apt: any) => {
+                // Debug logging
+                console.log('Raw appointment data:', apt);
+                console.log('AI Summary type:', typeof apt.aiSummary);
+                console.log('AI Summary value:', apt.aiSummary);
+                
+                // Parse aiSummary if it's a string
+                let parsedAiSummary = apt.aiSummary;
+                if (typeof apt.aiSummary === 'string' && apt.aiSummary) {
+                  try {
+                    parsedAiSummary = JSON.parse(apt.aiSummary);
+                  } catch (e) {
+                    console.warn('Failed to parse AI summary:', e);
+                    // Create a basic structure if parsing fails
+                    parsedAiSummary = {
+                      answer: apt.aiSummary,
+                      riskLevel: 'Medium'
+                    };
+                  }
+                }
+                
+                // Parse JSON string fields if they exist
+                let parsedPrescribedMedicines = apt.prescribedMedicines;
+                if (typeof apt.prescribedMedicines === 'string' && apt.prescribedMedicines) {
+                  try {
+                    parsedPrescribedMedicines = JSON.parse(apt.prescribedMedicines);
+                  } catch (e) {
+                    console.warn('Failed to parse prescribed medicines:', e);
+                  }
+                }
+                
+                let parsedRedFlags = apt.redFlags;
+                if (typeof apt.redFlags === 'string' && apt.redFlags) {
+                  try {
+                    parsedRedFlags = JSON.parse(apt.redFlags);
+                  } catch (e) {
+                    console.warn('Failed to parse red flags:', e);
+                    parsedRedFlags = [apt.redFlags]; // Treat as single item array
+                  }
+                }
+                
+                let parsedHomeRemedies = apt.homeRemedies;
+                if (typeof apt.homeRemedies === 'string' && apt.homeRemedies) {
+                  try {
+                    parsedHomeRemedies = JSON.parse(apt.homeRemedies);
+                  } catch (e) {
+                    console.warn('Failed to parse home remedies:', e);
+                    parsedHomeRemedies = [apt.homeRemedies]; // Treat as single item array
+                  }
+                }
+                
+                let parsedDoctorSummary = apt.doctorSummary;
+                if (typeof apt.doctorSummary === 'string' && apt.doctorSummary) {
+                  try {
+                    // Try to parse as JSON first, if it fails, keep as string
+                    const tempParsed = JSON.parse(apt.doctorSummary);
+                    if (typeof tempParsed === 'object') {
+                      parsedDoctorSummary = tempParsed;
+                    }
+                  } catch (e) {
+                    // Keep as string if not valid JSON
+                    parsedDoctorSummary = apt.doctorSummary;
+                  }
+                }
+
+                return {
+                  id: apt.id,
+                  patientName: apt.patientName,
+                  time: apt.time,
+                  type: apt.type,
+                  status: apt.status,
+                  notes: apt.notes,
+                  aiSummary: parsedAiSummary,
+                  doctorSummary: parsedDoctorSummary,
+                  // New fields from AI consultation
+                  patientAdvice: apt.patientAdvice,
+                  prescribedMedicines: parsedPrescribedMedicines,
+                  riskLevel: apt.riskLevel,
+                  redFlags: parsedRedFlags,
+                  homeRemedies: parsedHomeRemedies,
+                  specializationHint: apt.specializationHint
+                };
+              });
             }
+
+            // Calculate completed appointments
+            this.completedAppointments = this.upcomingAppointments.filter(apt => apt.status === 'Completed').length;
           }
         },
         error: (error) => {
@@ -141,12 +339,128 @@ export class DashboardComponent implements OnInit {
     return 'evening';
   }
 
-  onNavClick(itemId: string): void {
-    if (itemId === 'upload') {
-      this.router.navigate(['/doctor/prescriptions']);
-      return;
+  viewAppointmentDetails(appointment: Appointment): void {
+    this.selectedAppointment = appointment;
+    this.showAppointmentDialog = true;
+  }
+
+  completeAppointment(appointmentId: string): void {
+    // Update appointment status to completed
+    const appointment = this.upcomingAppointments.find(apt => apt.id === appointmentId);
+    if (appointment) {
+      appointment.status = 'Completed';
+      this.completedAppointments++;
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Appointment Completed',
+        detail: `Appointment ${appointmentId} has been marked as completed`
+      });
     }
-    this.messageService.add({ severity: 'info', summary: 'Navigation', detail: `${itemId} clicked` });
+  }
+
+  cancelAppointment(appointmentId: string): void {
+    // Update appointment status to cancelled
+    const appointment = this.upcomingAppointments.find(apt => apt.id === appointmentId);
+    if (appointment) {
+      appointment.status = 'Cancelled';
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Appointment Cancelled',
+        detail: `Appointment ${appointmentId} has been cancelled`
+      });
+    }
+  }
+
+  startConsultation(appointmentId: string): void {
+    const appointment = this.upcomingAppointments.find(apt => apt.id === appointmentId);
+    if (appointment) {
+      appointment.status = 'In Progress';
+      this.messageService.add({
+        severity: 'info',
+        summary: 'Consultation Started',
+        detail: `Consultation for ${appointment.patientName} has begun`
+      });
+    }
+  }
+
+  getRiskLevelSeverity(riskLevel: string): 'success' | 'warning' | 'danger' | 'info' {
+    switch (riskLevel) {
+      case 'Low':
+        return 'success';
+      case 'Medium':
+        return 'warning';
+      case 'High':
+      case 'Critical':
+        return 'danger';
+      default:
+        return 'info';
+    }
+  }
+
+  viewAllAppointments(): void {
+    this.messageService.add({
+      severity: 'info',
+      summary: 'View All Appointments',
+      detail: 'Navigate to appointments page'
+    });
+    // Navigate to appointments page
+    // this.router.navigate(['/doctor/appointments']);
+  }
+
+  manageSlots(): void {
+    this.messageService.add({
+      severity: 'info',
+      summary: 'Manage Slots',
+      detail: 'Open slot management interface'
+    });
+    // Navigate to slot management page
+    // this.router.navigate(['/doctor/slots']);
+  }
+
+  viewPatientRecords(): void {
+    this.messageService.add({
+      severity: 'info',
+      summary: 'Patient Records',
+      detail: 'Access patient medical records'
+    });
+    // Navigate to patient records page
+    // this.router.navigate(['/doctor/patients']);
+  }
+
+  writePrescription(appointmentId: string): void {
+    // Close the appointment dialog first
+    this.showAppointmentDialog = false;
+    
+    // Navigate to prescription writer with appointment ID
+    this.router.navigate(['/prescription/write', appointmentId]);
+    
+    this.messageService.add({
+      severity: 'success',
+      summary: 'Redirecting',
+      detail: 'Opening prescription writer for this appointment'
+    });
+  }
+
+  onNavClick(itemId: string): void {
+    switch (itemId) {
+      case 'prescriptions':
+        this.router.navigate(['/prescription/list']);
+        break;
+      case 'write-prescription':
+        // For now, show info about writing prescription from appointment
+        this.messageService.add({ 
+          severity: 'info', 
+          summary: 'Write Prescription', 
+          detail: 'Select an appointment to write a prescription for the patient' 
+        });
+        break;
+      case 'dashboard':
+        // Already on dashboard - refresh
+        this.loadDoctorData();
+        break;
+      default:
+        this.messageService.add({ severity: 'info', summary: 'Navigation', detail: `${itemId} clicked` });
+    }
   }
 
   toggleSidebar(): void {

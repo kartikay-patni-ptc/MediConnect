@@ -1,0 +1,196 @@
+<div class="order-tracking-container">
+  <p-toast></p-toast>
+
+  <!-- Header -->
+  <div class="bg-white rounded-lg shadow-sm mb-6 p-6">
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-3xl font-bold text-gray-800 mb-2">
+          <i class="pi pi-truck text-primary mr-3"></i>
+          Order Tracking
+        </h1>
+        <p class="text-gray-600">Track your medicine delivery status</p>
+      </div>
+      <p-button 
+        label="Back to List" 
+        icon="pi pi-arrow-left"
+        severity="secondary"
+        [outlined]="true"
+        (onClick)="goBack()">
+      </p-button>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="text-center py-8">
+    <p-progressSpinner></p-progressSpinner>
+    <p class="mt-4 text-gray-600">Loading order details...</p>
+  </div>
+
+  <div *ngIf="!loading && order" class="space-y-6">
+    <!-- Order Information -->
+    <p-card header="Order Information" styleClass="shadow-sm">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Order Number</label>
+          <p class="order-number">{{ order.orderNumber }}</p>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Order Date</label>
+          <p class="text-gray-900">{{ formatDate(order.createdAt) }}</p>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+          <p-tag [value]="order.status" [severity]="getStatusSeverity(order.status)"></p-tag>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Total Amount</label>
+          <p class="text-gray-900 font-semibold">₹{{ order.finalAmount }}</p>
+        </div>
+      </div>
+    </p-card>
+
+    <!-- Delivery Information -->
+    <p-card header="Delivery Information" styleClass="shadow-sm">
+      <div class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Delivery Address</label>
+          <p class="text-gray-900">{{ order.deliveryAddress }}</p>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Pincode</label>
+          <p class="text-gray-900">{{ order.deliveryPincode }}</p>
+        </div>
+        <div *ngIf="order.expectedDeliveryTime">
+          <label class="block text-sm font-medium text-gray-700 mb-2">Expected Delivery</label>
+          <p class="text-gray-900">{{ formatDate(order.expectedDeliveryTime) }}</p>
+        </div>
+      </div>
+    </p-card>
+
+    <!-- Pharmacy Information -->
+    <p-card *ngIf="order.pharmacy" header="Pharmacy Information" styleClass="shadow-sm">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Pharmacy Name</label>
+          <p class="text-gray-900">{{ order.pharmacy.name }}</p>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Contact</label>
+          <p class="text-gray-900">{{ order.pharmacy.phoneNumber }}</p>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Address</label>
+          <p class="text-gray-900">{{ order.pharmacy.address }}</p>
+        </div>
+      </div>
+    </p-card>
+
+    <!-- Order Items -->
+    <p-card header="Order Items" styleClass="shadow-sm">
+      <div class="space-y-4">
+        <div *ngFor="let item of order.orderItems; let i = index" 
+             class="border border-gray-200 rounded-lg p-4 bg-gray-50">
+          <div class="flex items-center justify-between mb-3">
+            <h4 class="text-lg font-semibold text-gray-800">{{ item.medicineName }}</h4>
+            <p-tag [value]="item.status" [severity]="getStatusSeverity(item.status)"></p-tag>
+          </div>
+          
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+            <div>
+              <span class="font-medium text-gray-600">Dosage:</span>
+              <p class="text-gray-900">{{ item.dosage }}</p>
+            </div>
+            <div>
+              <span class="font-medium text-gray-600">Quantity:</span>
+              <p class="text-gray-900">{{ item.quantityRequested }}</p>
+            </div>
+            <div *ngIf="item.unitPrice">
+              <span class="font-medium text-gray-600">Price:</span>
+              <p class="text-gray-900">₹{{ item.totalPrice }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </p-card>
+
+    <!-- Delivery Tracking -->
+    <p-card *ngIf="order.deliveryTracking" header="Delivery Tracking" styleClass="shadow-sm">
+      <div class="space-y-4">
+        <div *ngIf="order.deliveryTracking.trackingNumber">
+          <label class="block text-sm font-medium text-gray-700 mb-2">Tracking Number</label>
+          <p class="tracking-number">{{ order.deliveryTracking.trackingNumber }}</p>
+        </div>
+        
+        <div *ngIf="order.deliveryTracking.deliveryPartnerName">
+          <label class="block text-sm font-medium text-gray-700 mb-2">Delivery Partner</label>
+          <p class="text-gray-900">{{ order.deliveryTracking.deliveryPartnerName }}</p>
+        </div>
+        
+        <div *ngIf="order.deliveryTracking.deliveryPartnerPhone">
+          <label class="block text-sm font-medium text-gray-700 mb-2">Contact Number</label>
+          <p class="text-gray-900">{{ order.deliveryTracking.deliveryPartnerPhone }}</p>
+        </div>
+        
+        <div *ngIf="order.deliveryTracking.estimatedTimeMinutes">
+          <label class="block text-sm font-medium text-gray-700 mb-2">Estimated Delivery Time</label>
+          <p class="text-gray-900">{{ order.deliveryTracking.estimatedTimeMinutes }} minutes</p>
+        </div>
+      </div>
+    </p-card>
+
+    <!-- Order Timeline -->
+    <p-card header="Order Timeline" styleClass="shadow-sm">
+      <div class="timeline">
+        <div class="timeline-item completed">
+          <div class="timeline-marker"></div>
+          <div class="timeline-content">
+            <h4>Order Placed</h4>
+            <p>{{ formatDate(order.createdAt) }}</p>
+          </div>
+        </div>
+        
+        <div class="timeline-item" [class.completed]="order.status !== 'PENDING'">
+          <div class="timeline-marker"></div>
+          <div class="timeline-content">
+            <h4>Pharmacy Assigned</h4>
+            <p *ngIf="order.pharmacy">{{ order.pharmacy.name }}</p>
+          </div>
+        </div>
+        
+        <div class="timeline-item" [class.completed]="order.status === 'ACCEPTED' || order.status === 'PREPARING' || order.status === 'OUT_FOR_DELIVERY' || order.status === 'DELIVERED'">
+          <div class="timeline-marker"></div>
+          <div class="timeline-content">
+            <h4>Order Accepted</h4>
+            <p *ngIf="order.acceptedAt">{{ formatDate(order.acceptedAt) }}</p>
+          </div>
+        </div>
+        
+        <div class="timeline-item" [class.completed]="order.status === 'OUT_FOR_DELIVERY' || order.status === 'DELIVERED'">
+          <div class="timeline-marker"></div>
+          <div class="timeline-content">
+            <h4>Out for Delivery</h4>
+          </div>
+        </div>
+        
+        <div class="timeline-item" [class.completed]="order.status === 'DELIVERED'">
+          <div class="timeline-marker"></div>
+          <div class="timeline-content">
+            <h4>Delivered</h4>
+            <p *ngIf="order.deliveryTracking?.deliveryTime">{{ formatDate(order.deliveryTracking?.deliveryTime) }}</p>
+          </div>
+        </div>
+      </div>
+    </p-card>
+
+    <!-- Action Buttons -->
+    <div class="flex justify-center gap-4 pt-6">
+      <p-button 
+        label="Back to List" 
+        icon="pi pi-arrow-left"
+        severity="secondary"
+        [outlined]="true"
+        (onClick)="goBack()">
+      </p-button>
+    </div>
+  </div>
+</div>

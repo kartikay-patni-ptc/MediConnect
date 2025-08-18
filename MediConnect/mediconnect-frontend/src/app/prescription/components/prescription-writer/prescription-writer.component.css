@@ -1,0 +1,226 @@
+.prescription-writer-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  padding: 2rem;
+}
+
+.medicine-item {
+  transition: all 0.3s ease;
+  border: 2px solid #e5e7eb;
+  background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+}
+
+.medicine-item:hover {
+  border-color: #3b82f6;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+  transform: translateY(-2px);
+}
+
+.medicine-item .p-button {
+  transition: all 0.2s ease;
+}
+
+.medicine-item .p-button:hover {
+  transform: scale(1.05);
+}
+
+/* Form validation styles */
+.ng-invalid.ng-dirty {
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
+}
+
+.ng-valid.ng-dirty {
+  border-color: #10b981 !important;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1) !important;
+}
+
+/* Custom input styles */
+.p-inputtext, 
+.p-inputtextarea, 
+.p-dropdown {
+  transition: all 0.3s ease;
+  border-radius: 8px;
+}
+
+.p-inputtext:focus, 
+.p-inputtextarea:focus {
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  border-color: #3b82f6;
+}
+
+/* Card styling */
+.p-card {
+  border-radius: 12px;
+  border: none;
+  overflow: hidden;
+}
+
+.p-card .p-card-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  font-weight: 600;
+  border-radius: 12px 12px 0 0;
+}
+
+.p-card .p-card-content {
+  padding: 1.5rem;
+}
+
+/* Button styling */
+.p-button {
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.p-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.p-button.p-button-danger:hover {
+  background: #dc2626;
+  border-color: #dc2626;
+}
+
+.p-button.p-button-secondary {
+  background: #6b7280;
+  border-color: #6b7280;
+}
+
+/* Template buttons */
+.template-buttons .p-button {
+  margin-right: 0.5rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+  padding: 0.5rem 1rem;
+}
+
+/* File upload styling */
+.p-fileupload .p-button {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  color: white;
+  padding: 12px 24px;
+  font-weight: 500;
+}
+
+/* Dialog styling */
+.p-dialog .p-dialog-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 12px 12px 0 0;
+}
+
+.p-dialog .p-dialog-content {
+  border-radius: 0 0 12px 12px;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .prescription-writer-container {
+    padding: 1rem;
+  }
+  
+  .medicine-item .grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .flex.items-center.justify-between {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch;
+  }
+}
+
+/* Animation for adding/removing medicines */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.medicine-item {
+  animation: slideIn 0.3s ease-out;
+}
+
+/* Dropdown custom styling */
+.p-dropdown {
+  min-height: 42px;
+}
+
+.p-dropdown-panel {
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* Input number styling */
+.p-inputnumber {
+  width: 100%;
+}
+
+.p-inputnumber .p-inputnumber-input {
+  border-radius: 8px 0 0 8px;
+}
+
+.p-inputnumber .p-inputnumber-button {
+  border-radius: 0;
+}
+
+.p-inputnumber .p-inputnumber-button:last-child {
+  border-radius: 0 8px 8px 0;
+}
+
+/* Toast positioning */
+.p-toast {
+  z-index: 1050;
+}
+
+/* Progress spinner in dialog */
+.p-progressspinner {
+  width: 20px !important;
+  height: 20px !important;
+}
+
+/* Success indicators */
+.success-indicator {
+  color: #10b981;
+  background: #d1fae5;
+  border-color: #10b981;
+}
+
+/* Error indicators */
+.error-indicator {
+  color: #ef4444;
+  background: #fee2e2;
+  border-color: #ef4444;
+}
+
+/* Loading state overlay */
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+/* Prescription number highlight */
+.prescription-number {
+  font-family: 'Courier New', monospace;
+  background: #f3f4f6;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-weight: 600;
+}

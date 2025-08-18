@@ -2,26 +2,13 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { AuthService } from '../../auth/auth.service';
+import { BookAppointmentDialogComponent } from '../../appointment/book-appointment-dialog.component';
+import { AppointmentService } from '../../appointment/appointment.service';
+import { Doctor } from '../../appointment/appointment.model';
+import { PrescriptionService } from '../../prescription/services/prescription.service';
+import { Prescription as RealPrescription } from '../../prescription/models/prescription.model';
 
-interface Doctor {
-  id: number;
-  firstName: string;
-  lastName: string;
-  specialization: string;
-  experience: number;
-  hospital: string;
-  phoneNumber: string;
-  email: string;
-}
 
-interface Prescription {
-  id: number;
-  doctorName: string;
-  date: string;
-  medications: string[];
-  diagnosis: string;
-  notes: string;
-}
 
 @Component({
   selector: 'app-patient-dashboard',
@@ -32,17 +19,31 @@ export class PatientDashboardComponent implements OnInit {
   patient: any = null;
   doctors: Doctor[] = [];
   filteredDoctors: Doctor[] = [];
-  prescriptions: Prescription[] = [];
+  prescriptions: RealPrescription[] = [];
   searchTerm: string = '';
   isLoading = false;
+  showBookingDialog = false;
+  selectedDoctor: Doctor | null = null;
+  patientId: number = 0;
+  aiSummary: string | null = null;
+  doctorSummary: string | null = null;
+  patientAdvice: string | null = null;
+  prescribedMedicines: string | null = null;
+  riskLevel: string | null = null;
+  redFlags: string | null = null;
+  homeRemedies: string | null = null;
+  specializationHint: string | null = null;
 
   constructor(
     private authService: AuthService,
     private messageService: MessageService,
-    private router: Router
+    private router: Router,
+    private appointmentService: AppointmentService,
+    private prescriptionService: PrescriptionService
   ) {}
 
   ngOnInit(): void {
+    this.patientId = this.authService.getUserId();
     this.loadDashboard();
     // Don't load all doctors initially - we'll search from database when needed
   }
@@ -61,17 +62,8 @@ export class PatientDashboardComponent implements OnInit {
             this.filteredDoctors = [...this.doctors];
           }
           
-          // Load prescriptions from dashboard data
-          if (response.prescriptions) {
-            this.prescriptions = response.prescriptions.map((prescription: any) => ({
-              id: prescription.id,
-              doctorName: prescription.doctorName,
-              date: prescription.date,
-              medications: prescription.medications,
-              diagnosis: prescription.diagnosis,
-              notes: prescription.notes
-            }));
-          }
+          // Load prescriptions using prescription service
+          this.loadPrescriptions();
         },
         error: (error) => {
           console.error('Error loading dashboard:', error);
@@ -90,10 +82,7 @@ export class PatientDashboardComponent implements OnInit {
 
 
 
-  loadPrescriptions(): void {
-    // This will be loaded from the dashboard data
-    // Keeping empty for now as it's loaded in loadDashboard()
-  }
+
 
   searchDoctors(): void {
     console.log('Searching for:', this.searchTerm);
@@ -150,21 +139,84 @@ export class PatientDashboardComponent implements OnInit {
     });
   }
 
-  bookAppointment(doctor: Doctor): void {
-    this.messageService.add({
-      severity: 'info',
-      summary: 'Info',
-      detail: `Appointment booking feature coming soon for Dr. ${doctor.firstName} ${doctor.lastName}`
-    });
+  bookAppointment(doctor: Doctor, aiData?: any): void {
+    this.selectedDoctor = doctor;
+    
+    // Store AI response data if provided
+    if (aiData) {
+      this.aiSummary = aiData.answer || aiData.patientAdvice || null;
+      this.doctorSummary = aiData.doctorSummary || null;
+      this.patientAdvice = aiData.patientAdvice || null;
+      this.prescribedMedicines = aiData.prescribedMedicines ? JSON.stringify(aiData.prescribedMedicines) : null;
+      this.riskLevel = aiData.riskLevel || null;
+      this.redFlags = aiData.redFlags ? JSON.stringify(aiData.redFlags) : null;
+      this.homeRemedies = aiData.homeRemedies ? JSON.stringify(aiData.homeRemedies) : null;
+      this.specializationHint = aiData.specializationHint || null;
+    } else {
+      // Clear AI data if not provided
+      this.aiSummary = null;
+      this.doctorSummary = null;
+      this.patientAdvice = null;
+      this.prescribedMedicines = null;
+      this.riskLevel = null;
+      this.redFlags = null;
+      this.homeRemedies = null;
+      this.specializationHint = null;
+    }
+    
+    this.showBookingDialog = true;
   }
 
-  downloadPrescription(prescription: Prescription): void {
-    // Mock PDF download functionality
+  onAppointmentBooked(appointment: any) {
     this.messageService.add({
       severity: 'success',
-      summary: 'Success',
-      detail: `Downloading prescription from ${prescription.date}`
+      summary: 'Appointment Booked',
+      detail: 'Your appointment has been booked successfully.'
     });
+    this.showBookingDialog = false;
+    // Optionally refresh appointment list here
+  }
+
+
+
+  loadPrescriptions(): void {
+    if (this.patientId && this.patientId > 0) {
+      this.prescriptionService.getPatientPrescriptions(this.patientId).subscribe({
+        next: (prescriptions) => {
+          this.prescriptions = prescriptions;
+        },
+        error: (error) => {
+          console.error('Failed to load prescriptions:', error);
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Failed to load prescriptions'
+          });
+        }
+      });
+    } else {
+      console.warn('Patient ID not available yet, skipping prescription load');
+    }
+  }
+
+  downloadPrescription(prescription: RealPrescription): void {
+    if (prescription.prescriptionImageUrl) {
+      window.open('http://localhost:8080' + prescription.prescriptionImageUrl, '_blank');
+    } else {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'No File',
+        detail: 'No prescription file available for download'
+      });
+    }
+  }
+
+  viewPrescription(prescription: RealPrescription): void {
+    this.router.navigate(['/prescription/view', prescription.id]);
+  }
+
+  orderMedicines(prescription: RealPrescription): void {
+    this.router.navigate(['/prescription/order', prescription.id]);
   }
 
   editProfile(): void {

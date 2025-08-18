@@ -71,6 +71,8 @@ export class AuthService {
   private readonly API_URL = 'http://localhost:8080/api/auth';
   private readonly PHARMACY_API_URL = 'http://localhost:8080/api/pharmacy';
   private readonly DOCTOR_API_URL = 'http://localhost:8080/api/doctor';
+  private readonly AI_API_URL = 'http://localhost:8080/api/ai';
+  private readonly MEDS_API_URL = 'http://localhost:8080/api/patient/history/medications';
 
   constructor(private http: HttpClient) {}
 
@@ -188,10 +190,41 @@ export class AuthService {
   updatePatientProfile(id: number, profile: any): Observable<any> {
     return this.http.put(`http://localhost:8080/api/patient/profile/${id}`, profile);
   }
+  getPatientHistory(userId: number): Observable<any> {
+    return this.http.get(`http://localhost:8080/api/patient/history/${userId}`);
+  }
 
   // Doctor Search Methods
   searchDoctors(specialization?: string): Observable<any> {
     const params = specialization ? { specialization } : {};
     return this.http.get(`${this.DOCTOR_API_URL}/search`, { params: params as any });
+  }
+
+  // AI Consult Methods
+  aiConsult(question: string): Observable<any> {
+    const body = { patientId: this.getUserId(), question };
+    return this.http.post(`${this.AI_API_URL}/consult`, body);
+  }
+
+  aiHistory(): Observable<any> {
+    const userId = this.getUserId();
+    return this.http.get(`${this.AI_API_URL}/history/${userId}`);
+  }
+
+  // Medication History CRUD
+  listMedications(patientId: number): Observable<any> {
+    return this.http.get(`${this.MEDS_API_URL}/${patientId}`);
+  }
+
+  addMedication(patientId: number, payload: any): Observable<any> {
+    return this.http.post(`${this.MEDS_API_URL}/${patientId}`, payload);
+  }
+
+  updateMedication(id: number, payload: any): Observable<any> {
+    return this.http.put(`${this.MEDS_API_URL}/${id}`, payload);
+  }
+
+  deleteMedication(id: number): Observable<any> {
+    return this.http.delete(`${this.MEDS_API_URL}/${id}`);
   }
 }

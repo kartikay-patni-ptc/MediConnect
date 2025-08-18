@@ -4,14 +4,18 @@ import com.example.demo.model.Doctor;
 import com.example.demo.model.DoctorDto;
 import com.example.demo.model.DoctorVerificationRequest;
 import com.example.demo.model.Patient;
+import com.example.demo.model.Appointment;
 import com.example.demo.service.DoctorService;
 import com.example.demo.service.PatientService;
+import com.example.demo.service.AppointmentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/doctor")
@@ -23,6 +27,9 @@ public class DoctorController {
 
     @Autowired
     private PatientService patientService;
+
+    @Autowired
+    private AppointmentService appointmentService;
 
     @PostMapping("/create-profile")
     public ResponseEntity<?> createProfile(@RequestBody DoctorDto doctorDto) {
@@ -57,16 +64,47 @@ public class DoctorController {
             var doctorOpt = doctorService.getDoctorByUserId(userId);
             if (doctorOpt.isPresent()) {
                 Doctor doctor = doctorOpt.get();
+                
+                // Get doctor's appointments
+                List<Appointment> appointments = appointmentService.getAppointmentsByDoctor(doctor.getId());
+                
+                // Transform appointments to match frontend expectations
+                List<Map<String, Object>> appointmentData = appointments.stream()
+                    .map(apt -> {
+                        Map<String, Object> appointmentMap = new HashMap<>();
+                        appointmentMap.put("id", apt.getId().toString());
+                        appointmentMap.put("patientName", apt.getPatient().getFirstName() + " " + apt.getPatient().getLastName());
+                        appointmentMap.put("time", apt.getSlot().getStartTime().toString());
+                        appointmentMap.put("type", "Consultation");
+                        appointmentMap.put("status", apt.getStatus().toString());
+                        appointmentMap.put("notes", apt.getNotes());
+                        appointmentMap.put("aiSummary", apt.getAiSummary());
+                        appointmentMap.put("doctorSummary", apt.getDoctorSummary());
+                        
+                        // Debug logging to verify data
+                        System.out.println("=== APPOINTMENT DATA ===");
+                        System.out.println("ID: " + apt.getId());
+                        System.out.println("Notes: " + apt.getNotes());
+                        System.out.println("AI Summary: " + apt.getAiSummary());
+                        
+                        return appointmentMap;
+                    })
+                    .collect(Collectors.toList());
+                
+                // Count pending appointments
+                long pendingAppointments = appointments.stream()
+                    .filter(apt -> apt.getStatus() == Appointment.Status.Pending)
+                    .count();
 
-                // Return empty data - no sample data
-                return ResponseEntity.ok(Map.of(
-                        "doctor", doctor,
-                        "patients", List.of(),
-                        "appointments", List.of(),
-                        "totalAppointments", 0,
-                        "pendingAppointments", 0,
-                        "totalPatients", 0
-                ));
+                Map<String, Object> response = new HashMap<>();
+                response.put("doctor", doctor);
+                response.put("patients", List.of());
+                response.put("appointments", appointmentData);
+                response.put("totalAppointments", appointments.size());
+                response.put("pendingAppointments", (int) pendingAppointments);
+                response.put("totalPatients", 0);
+
+                return ResponseEntity.ok(response);
             } else {
                 return ResponseEntity.notFound().build();
             }

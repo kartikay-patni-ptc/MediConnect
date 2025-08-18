@@ -1,0 +1,353 @@
+<div class="shell">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="logo">MediConnect</div>
+    <nav>
+      <a routerLink="/patient/dashboard"><i class="pi pi-home"></i> Dashboard</a>
+      <a class="active"><i class="pi pi-comments"></i> AI Consult</a>
+      <a routerLink="/patient/profile"><i class="pi pi-user"></i> Profile</a>
+    </nav>
+  </aside>
+
+  <!-- Main Area -->
+  <main class="main">
+    <!-- Enhanced Header with Actions -->
+    <section class="hero">
+      <div class="hero-left">
+        <h2 class="hero-title">
+          <i class="pi pi-heart text-primary mr-2"></i>AI Health Assistant
+          <span class="message-count" *ngIf="getMessageCount() > 0">({{ getMessageCount() }} messages)</span>
+        </h2>
+        <p class="hero-sub">Describe your symptoms, medications, or concerns. I'll suggest home remedies and specialists if needed.</p>
+      </div>
+      <div class="hero-right">
+        <button pButton icon="pi pi-refresh" label="Regenerate" 
+                class="p-button-text" 
+                [disabled]="!lastQuestion || isLoading"
+                (click)="regenerate()"
+                pTooltip="Regenerate last response">
+        </button>
+        <button pButton icon="pi pi-plus" label="New Chat" 
+                class="p-button-text p-button-success" 
+                (click)="startNewConversation()"
+                pTooltip="Start new conversation">
+        </button>
+        <button pButton icon="pi pi-download" label="Export" 
+                class="p-button-text p-button-secondary" 
+                [disabled]="getMessageCount() === 0"
+                (click)="exportConversation()"
+                pTooltip="Export conversation">
+        </button>
+      </div>
+    </section>
+
+    <!-- Error Message Bar -->
+    <div *ngIf="errorMessage$ | async as error" class="error-bar">
+      <i class="pi pi-exclamation-triangle"></i>
+      <span>{{ error }}</span>
+      <button class="error-close" (click)="dismissError()">
+        <i class="pi pi-times"></i>
+      </button>
+    </div>
+
+    <section class="workspace">
+      <div class="editor card">
+        <div class="chat-header">
+          <i class="pi pi-stethoscope"></i>
+          <div>
+            <div class="chat-title">
+              Medical Consultation
+              <span class="connection-status" 
+                    [class.connected]="!(loadingState$ | async)"
+                    [class.loading]="loadingState$ | async">
+                {{ (loadingState$ | async) ? 'Loading...' : 'Ready' }}
+              </span>
+            </div>
+            <small class="chat-sub">Provide clear symptoms for better guidance</small>
+          </div>
+          <div class="chat-actions">
+            <button pButton icon="pi pi-focus" 
+                    class="p-button-text p-button-sm"
+                    (click)="focusInput()"
+                    pTooltip="Focus input">
+            </button>
+          </div>
+        </div>
+
+        <!-- Enhanced Messages Area -->
+        <div class="messages" #messagesEl>
+          <div *ngFor="let m of messages; trackBy: trackMessage" 
+               class="msg" 
+               [ngClass]="{
+                 'user': m.role === 'user',
+                 'assistant': m.role === 'assistant',
+                 'error': m.error,
+                 'typing': m.isTyping
+               }">
+            <div class="msg-row">
+              <div class="msg-content">
+                <p class="msg-text">{{ m.content }}</p>
+                
+                <!-- Enhanced AI Response Details -->
+                <div *ngIf="m.role === 'assistant' && !m.error" class="ai-response-details">
+                  
+                  <!-- Risk Level Badge -->
+                  <div *ngIf="m.riskLevel" 
+                       class="risk-badge"
+                       [ngClass]="'risk-' + m.riskLevel.toLowerCase()">
+                    <i class="pi pi-exclamation-triangle"></i>
+                    Risk: {{ m.riskLevel }}
+                  </div>
+
+                  <!-- Prescribed Medicines -->
+                  <div *ngIf="m.prescribedMedicines && m.prescribedMedicines.length > 0" 
+                       class="medicines-section">
+                    <h4><i class="pi pi-heart"></i>Recommended Medicines</h4>
+                    <div class="medicines-grid">
+                      <div *ngFor="let med of m.prescribedMedicines" class="medicine-card">
+                        <div class="medicine-name">{{ med.name }}</div>
+                        <div class="medicine-details">
+                          <span class="dose">{{ med.dose }}</span>
+                          <span class="frequency">{{ med.frequency }}</span>
+                          <span class="duration">{{ med.duration }}</span>
+                        </div>
+                        <div class="medicine-type" [ngClass]="med.otcOrPrescription.toLowerCase()">
+                          {{ med.otcOrPrescription }}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Red Flags -->
+                  <div *ngIf="m.redFlags && m.redFlags.length > 0" class="red-flags-section">
+                    <h4 class="text-red-600"><i class="pi pi-exclamation-circle"></i>Warning Signs</h4>
+                    <ul class="flags-list">
+                      <li *ngFor="let flag of m.redFlags" class="flag-item danger">
+                        <i class="pi pi-circle-fill"></i>{{ flag }}
+                      </li>
+                    </ul>
+                  </div>
+
+                  <!-- Home Remedies -->
+                  <div *ngIf="m.homeRemedies && m.homeRemedies.length > 0" class="remedies-section">
+                    <h4 class="text-green-600"><i class="pi pi-home"></i>Home Care</h4>
+                    <ul class="flags-list">
+                      <li *ngFor="let remedy of m.homeRemedies" class="flag-item success">
+                        <i class="pi pi-check-circle"></i>{{ remedy }}
+                      </li>
+                    </ul>
+                  </div>
+
+                  <!-- Specialist Recommendation -->
+                  <div *ngIf="m.specializationHint" class="specialist-section">
+                    <h4 class="text-blue-600"><i class="pi pi-user-md"></i>Specialist Recommendation</h4>
+                    <div class="specialist-hint">
+                      Consider consulting a <strong>{{ m.specializationHint }}</strong> specialist
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Message Actions -->
+              <div class="msg-actions" *ngIf="m.role === 'assistant' && !m.error">
+                <button pButton icon="pi pi-copy" 
+                        class="p-button-text p-button-sm" 
+                        pTooltip="Copy message"
+                        (click)="copy(m.content)">
+                </button>
+                <button pButton 
+                        [icon]="m.liked ? 'pi pi-thumbs-up-fill' : 'pi pi-thumbs-up'" 
+                        class="p-button-text p-button-sm"
+                        [class.liked]="m.liked"
+                        (click)="vote(m, true)" 
+                        pTooltip="Helpful">
+                </button>
+                <button pButton 
+                        [icon]="m.disliked ? 'pi pi-thumbs-down-fill' : 'pi pi-thumbs-down'" 
+                        class="p-button-text p-button-sm"
+                        [class.disliked]="m.disliked"
+                        (click)="vote(m, false)" 
+                        pTooltip="Not helpful">
+                </button>
+              </div>
+            </div>
+            <small class="msg-time">{{ m.timestamp | date:'medium' }}</small>
+          </div>
+
+          <!-- Enhanced Loading/Typing Indicator -->
+          <div *ngIf="isLoading || (typingIndicator$ | async)" class="msg assistant typing">
+            <div class="msg-content">
+              <div class="typing-indicator">
+                <div class="typing-dots">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </div>
+                <span class="typing-text">AI is thinking...</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Empty State -->
+          <div *ngIf="getMessageCount() === 0 && !isLoading" class="empty-state">
+            <i class="pi pi-comments empty-icon"></i>
+            <h3>Start Your Health Consultation</h3>
+            <p>Ask about symptoms, medications, or health concerns. Our AI will provide personalized advice and specialist recommendations.</p>
+          </div>
+        </div>
+
+        <!-- Enhanced Composer -->
+        <div class="composer">
+          <div class="input-wrapper">
+            <textarea #inputEl
+                      pInputTextarea 
+                      [(ngModel)]="input" 
+                      rows="1"
+                      [maxlength]="1000"
+                      [disabled]="isInputDisabled()"
+                      (keydown)="onKeydown($event)"
+                      (input)="onInput($event)"
+                      placeholder="Describe your symptoms, ask about medications, or share health concerns..."
+                      class="auto-resize">
+            </textarea>
+            <div class="char-counter" 
+                 [class.warning]="input.length > 800"
+                 [class.danger]="input.length > 950">
+              {{ input.length }}/1000
+            </div>
+          </div>
+          <div class="composer-actions">
+            <p-button label="Send" 
+                      icon="pi pi-send" 
+                      [disabled]="isInputDisabled() || !input.trim()"
+                      [loading]="isLoading"
+                      (onClick)="send()">
+            </p-button>
+            <p-button label="Clear" 
+                      icon="pi pi-times" 
+                      class="p-button-text" 
+                      [disabled]="!input.trim()"
+                      (onClick)="input = ''"
+                      pTooltip="Clear input">
+            </p-button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Enhanced Side Panel -->
+      <div class="rail">
+        <!-- Quick Prompts with Categories -->
+        <div class="panel card">
+          <div class="panel-title">
+            <i class="pi pi-bolt"></i>Quick Start
+          </div>
+          
+          <!-- Tabbed Quick Prompts -->
+          <div class="prompt-categories">
+            <button class="category-tab active" data-category="common">Common</button>
+            <button class="category-tab" data-category="emergency">Emergency</button>
+            <button class="category-tab" data-category="chronic">Chronic</button>
+          </div>
+          
+          <div class="chips">
+            <button type="button" 
+                    *ngFor="let q of getQuickPromptsByCategory('common')" 
+                    class="chip"
+                    [disabled]="isLoading"
+                    (click)="ask(q)">
+              <i class="pi pi-sparkles mr-1"></i>{{ q }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Home Remedies -->
+        <div class="panel card" *ngIf="remedies.length">
+          <div class="panel-title">
+            <i class="pi pi-home"></i>Home Remedies
+          </div>
+          <ul class="remedy-list">
+            <li *ngFor="let r of remedies" class="remedy-item">
+              <i class="pi pi-check"></i>{{ r }}
+            </li>
+          </ul>
+        </div>
+
+        <!-- Suggested Specialists -->
+        <div class="panel card" *ngIf="suggestedDoctors.length">
+          <div class="panel-title">
+            <i class="pi pi-user-md"></i>Suggested Specialists
+          </div>
+          <div class="doctors-grid">
+            <div class="doctor-card" *ngFor="let d of suggestedDoctors">
+              <div class="doctor-info">
+                <i class="pi pi-user-md doctor-icon"></i>
+                <div class="doctor-details">
+                  <div class="doctor-name">Dr. {{ d.firstName }} {{ d.lastName }}</div>
+                  <div class="doctor-specialty">{{ d.specialization }}</div>
+                  <div class="doctor-experience">{{ d.experience }} years</div>
+                </div>
+              </div>
+              <button pButton 
+                      icon="pi pi-calendar" 
+                      class="p-button-sm p-button-rounded" 
+                      label="Book"
+                      [disabled]="isLoading"
+                      (click)="openBookingDialogFromAI(d)"
+                      pTooltip="Book appointment">
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Questions -->
+        <div class="panel card" *ngIf="history.length">
+          <div class="panel-title">
+            <i class="pi pi-history"></i>Recent Questions
+          </div>
+          <ul class="history-list">
+            <li *ngFor="let q of history.slice(0, 5)" 
+                class="history-item"
+                [class.disabled]="isLoading"
+                (click)="!isLoading && ask(q)">
+              <i class="pi pi-clock"></i>
+              <span class="history-text">{{ q }}</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Conversation Stats -->
+        <div class="panel card" *ngIf="getMessageCount() > 0">
+          <div class="panel-title">
+            <i class="pi pi-chart-line"></i>Session Info
+          </div>
+          <div class="stats">
+            <div class="stat-item">
+              <span class="stat-label">Messages:</span>
+              <span class="stat-value">{{ getMessageCount() }}</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Started:</span>
+              <span class="stat-value">{{ messages.length > 0 ? (messages[0].timestamp | date:'shortTime') : 'N/A' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- Enhanced Appointment Booking Dialog -->
+<app-book-appointment-dialog
+  [(visible)]="showBookingDialog"
+  [doctor]="selectedDoctor"
+  [patientId]="patientId"
+  [aiSummary]="aiSummary"
+  [doctorSummary]="doctorSummary"
+  [patientAdvice]="patientAdvice"
+  [prescribedMedicines]="prescribedMedicines"
+  [riskLevel]="riskLevel"
+  [redFlags]="redFlags"
+  [homeRemedies]="homeRemedies"
+  [specializationHint]="specializationHint"
+  (appointmentBooked)="onAppointmentBooked($event)">
+</app-book-appointment-dialog>

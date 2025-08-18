@@ -122,18 +122,7 @@ public class PharmacyStoreController {
         }
     }
 
-    @PostMapping
-    public ResponseEntity<?> createStore(@RequestBody PharmacyStore store) {
-        try {
-            PharmacyStore createdStore = service.createPharmacyStore(new PharmacyStoreDto());
-            return ResponseEntity.ok(Map.of(
-                    "message", "Pharmacy store created successfully",
-                    "store", createdStore
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        }
-    }
+    // Removed conflicting generic POST mapping at "/api/pharmacy". Use "/create-profile" instead.
 
     @GetMapping
     public ResponseEntity<List<PharmacyStore>> getStores() {

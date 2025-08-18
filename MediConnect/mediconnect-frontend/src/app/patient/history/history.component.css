@@ -1,0 +1,15 @@
+
+.history :where(.p-accordion),
+.history :where(.p-accordion .p-accordion-header-link),
+.history :where(.p-accordion .p-accordion-content) {
+  border-radius: .9rem !important;
+}
+
+.table-wrap { overflow-x: auto; }
+
+@media (max-width: 480px) {
+  :host ::ng-deep .p-table table { display:block; width:100%; }
+}
+
+
+

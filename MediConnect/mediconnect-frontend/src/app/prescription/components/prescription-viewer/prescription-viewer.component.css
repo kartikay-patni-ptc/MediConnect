@@ -1,0 +1,44 @@
+.prescription-viewer-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  padding: 2rem;
+}
+
+.prescription-number {
+  font-family: 'Courier New', monospace;
+  background: #f3f4f6;
+  padding: 0.5rem;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 1rem;
+  color: #374151;
+  border: 1px solid #d1d5db;
+}
+
+.p-card {
+  border-radius: 12px;
+  border: none;
+  overflow: hidden;
+}
+
+.p-card .p-card-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  font-weight: 600;
+}
+
+.medicine-card {
+  transition: all 0.3s ease;
+  border-radius: 8px;
+}
+
+.medicine-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+  .prescription-viewer-container {
+    padding: 1rem;
+  }
+}

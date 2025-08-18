@@ -1,0 +1,332 @@
+package com.example.demo.controllers;
+
+import com.example.demo.model.*;
+import com.example.demo.service.MedicineOrderService;
+import com.example.demo.service.PharmacyMatchingService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+@RestController
+@RequestMapping("/api/medicine-orders")
+@CrossOrigin(origins = "*")
+public class MedicineOrderController {
+
+    @Autowired
+    private MedicineOrderService medicineOrderService;
+
+    @Autowired
+    private PharmacyMatchingService pharmacyMatchingService;
+
+    @PostMapping("/create")
+    public ResponseEntity<?> createOrder(@RequestBody CreateOrderRequest request) {
+        try {
+            MedicineOrder order = medicineOrderService.createOrder(
+                request.getPrescriptionId(),
+                request.getPatientId(),
+                request.getDeliveryAddress(),
+                request.getDeliveryPincode(),
+                request.getSpecialInstructions()
+            );
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "Medicine order created successfully");
+            response.put("order", order);
+            response.put("orderNumber", order.getOrderNumber());
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", "Failed to create order: " + e.getMessage());
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+
+    @GetMapping("/patient/{patientId}")
+    public ResponseEntity<?> getPatientOrders(@PathVariable Long patientId) {
+        try {
+            List<MedicineOrder> orders = medicineOrderService.getPatientOrders(patientId);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("orders", orders);
+            response.put("count", orders.size());
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", "Failed to get patient orders: " + e.getMessage());
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+
+    @GetMapping("/pharmacy/{pharmacyId}")
+    public ResponseEntity<?> getPharmacyOrders(@PathVariable Long pharmacyId) {
+        try {
+            List<MedicineOrder> orders = medicineOrderService.getPharmacyOrders(pharmacyId);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("orders", orders);
+            response.put("count", orders.size());
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", "Failed to get pharmacy orders: " + e.getMessage());
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+
+    @GetMapping("/pending")
+    public ResponseEntity<?> getPendingOrders() {
+        try {
+            List<MedicineOrder> orders = medicineOrderService.getPendingOrders();
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("orders", orders);
+            response.put("count", orders.size());
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", "Failed to get pending orders: " + e.getMessage());
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+
+    @GetMapping("/{orderId}")
+    public ResponseEntity<?> getOrderById(@PathVariable Long orderId) {
+        try {
+            Optional<MedicineOrder> orderOpt = medicineOrderService.getOrderById(orderId);
+            
+            if (!orderOpt.isPresent()) {
+                Map<String, Object> response = new HashMap<>();
+                response.put("success", false);
+                response.put("message", "Order not found");
+                return ResponseEntity.notFound().build();
+            }
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("order", orderOpt.get());
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", "Failed to get order: " + e.getMessage());
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+
+    @GetMapping("/number/{orderNumber}")
+    public ResponseEntity<?> getOrderByNumber(@PathVariable String orderNumber) {
+        try {
+            Optional<MedicineOrder> orderOpt = medicineOrderService.getOrderByNumber(orderNumber);
+            
+            if (!orderOpt.isPresent()) {
+                Map<String, Object> response = new HashMap<>();
+                response.put("success", false);
+                response.put("message", "Order not found");
+                return ResponseEntity.notFound().build();
+            }
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("order", orderOpt.get());
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", "Failed to get order: " + e.getMessage());
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+
+    @PostMapping("/{orderId}/accept")
+    public ResponseEntity<?> acceptOrder(@PathVariable Long orderId, @RequestBody AcceptOrderRequest request) {
+        try {
+            MedicineOrder order = medicineOrderService.acceptOrder(orderId, request.getPharmacyId());
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "Order accepted successfully");
+            response.put("order", order);
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", "Failed to accept order: " + e.getMessage());
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+
+    @PostMapping("/{orderId}/reject")
+    public ResponseEntity<?> rejectOrder(@PathVariable Long orderId, @RequestBody RejectOrderRequest request) {
+        try {
+            MedicineOrder order = medicineOrderService.rejectOrder(
+                orderId, 
+                request.getPharmacyId(), 
+                request.getRejectionReason()
+            );
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "Order rejected successfully");
+            response.put("order", order);
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", "Failed to reject order: " + e.getMessage());
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+
+    @PutMapping("/{orderId}/status")
+    public ResponseEntity<?> updateOrderStatus(@PathVariable Long orderId, @RequestBody UpdateStatusRequest request) {
+        try {
+            MedicineOrder order = medicineOrderService.updateOrderStatus(orderId, request.getStatus());
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "Order status updated successfully");
+            response.put("order", order);
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", "Failed to update order status: " + e.getMessage());
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+
+    @GetMapping("/nearby-pharmacies")
+    public ResponseEntity<?> getNearbyPharmacies(
+            @RequestParam String pincode,
+            @RequestParam(defaultValue = "10.0") double radiusKm) {
+        try {
+            List<PharmacyStore> pharmacies = pharmacyMatchingService.findNearbyPharmacies(pincode, radiusKm);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("pharmacies", pharmacies);
+            response.put("count", pharmacies.size());
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", "Failed to get nearby pharmacies: " + e.getMessage());
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+
+    @GetMapping("/delivery-estimate")
+    public ResponseEntity<?> getDeliveryEstimate(
+            @RequestParam String pincode,
+            @RequestParam Long pharmacyId) {
+        try {
+            double distance = pharmacyMatchingService.getDistanceToPharmacy(pincode, pharmacyId);
+            if (distance < 0) {
+                Map<String, Object> response = new HashMap<>();
+                response.put("success", false);
+                response.put("message", "Unable to calculate distance to pharmacy");
+                return ResponseEntity.badRequest().body(response);
+            }
+
+            int estimatedTime = pharmacyMatchingService.getEstimatedDeliveryTime(distance);
+            double deliveryFee = pharmacyMatchingService.calculateDeliveryFee(distance);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("distance", distance);
+            response.put("estimatedTimeMinutes", estimatedTime);
+            response.put("deliveryFee", deliveryFee);
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("message", "Failed to get delivery estimate: " + e.getMessage());
+            return ResponseEntity.badRequest().body(response);
+        }
+    }
+
+    // DTOs
+    public static class CreateOrderRequest {
+        private Long prescriptionId;
+        private Long patientId;
+        private String deliveryAddress;
+        private String deliveryPincode;
+        private String specialInstructions;
+
+        // Getters and setters
+        public Long getPrescriptionId() { return prescriptionId; }
+        public void setPrescriptionId(Long prescriptionId) { this.prescriptionId = prescriptionId; }
+        
+        public Long getPatientId() { return patientId; }
+        public void setPatientId(Long patientId) { this.patientId = patientId; }
+        
+        public String getDeliveryAddress() { return deliveryAddress; }
+        public void setDeliveryAddress(String deliveryAddress) { this.deliveryAddress = deliveryAddress; }
+        
+        public String getDeliveryPincode() { return deliveryPincode; }
+        public void setDeliveryPincode(String deliveryPincode) { this.deliveryPincode = deliveryPincode; }
+        
+        public String getSpecialInstructions() { return specialInstructions; }
+        public void setSpecialInstructions(String specialInstructions) { this.specialInstructions = specialInstructions; }
+    }
+
+    public static class AcceptOrderRequest {
+        private Long pharmacyId;
+
+        public Long getPharmacyId() { return pharmacyId; }
+        public void setPharmacyId(Long pharmacyId) { this.pharmacyId = pharmacyId; }
+    }
+
+    public static class RejectOrderRequest {
+        private Long pharmacyId;
+        private String rejectionReason;
+
+        public Long getPharmacyId() { return pharmacyId; }
+        public void setPharmacyId(Long pharmacyId) { this.pharmacyId = pharmacyId; }
+        
+        public String getRejectionReason() { return rejectionReason; }
+        public void setRejectionReason(String rejectionReason) { this.rejectionReason = rejectionReason; }
+    }
+
+    public static class UpdateStatusRequest {
+        private MedicineOrder.OrderStatus status;
+
+        public MedicineOrder.OrderStatus getStatus() { return status; }
+        public void setStatus(MedicineOrder.OrderStatus status) { this.status = status; }
+    }
+}

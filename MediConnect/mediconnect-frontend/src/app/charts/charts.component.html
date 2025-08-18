@@ -1,0 +1,19 @@
+<div class="grid">
+  <div class="col-12 lg:col-8">
+    <p-card header="Medication History Over Time" styleClass="shadow-2">
+      <div class="chart-box">
+        <p-chart type="line" [data]="medicationOverTime" [options]="options"></p-chart>
+      </div>
+    </p-card>
+  </div>
+  <div class="col-12 lg:col-4">
+    <p-card header="Allergy Breakdown" styleClass="shadow-2">
+      <div class="chart-box">
+        <p-chart type="doughnut" [data]="allergyBreakdown" [options]="options"></p-chart>
+      </div>
+    </p-card>
+  </div>
+</div>
+
+
+

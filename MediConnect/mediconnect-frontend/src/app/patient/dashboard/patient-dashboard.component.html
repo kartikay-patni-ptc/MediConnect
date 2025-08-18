@@ -1,18 +1,76 @@
-<div class="container mx-auto p-4">
-  <p-toast></p-toast>
-  
-  <!-- Header -->
-  <div class="mb-4">
-    <div class="flex justify-content-between align-items-center">
-      <h1 class="text-3xl font-bold text-900">Patient Dashboard</h1>
-      <div class="flex gap-2">
-        <p-button label="Edit Profile" icon="pi pi-user-edit" (onClick)="editProfile()"></p-button>
-        <p-button label="Logout" icon="pi pi-sign-out" severity="secondary" (onClick)="logout()"></p-button>
+<p-toast></p-toast>
+<div class="min-h-screen flex bg-gray-50">
+  <!-- Sidebar -->
+  <aside class="bg-white border-r border-gray-200 w-72 shrink-0 hidden lg:flex lg:flex-col">
+    <div class="p-4 flex items-center gap-3 border-b border-gray-200">
+      <p-avatar label="PA" shape="circle" styleClass="bg-indigo-500 text-white"></p-avatar>
+      <div>
+        <div class="font-semibold">{{ patient?.firstName || 'Patient' }}</div>
+        <div class="text-sm text-gray-500">Dashboard</div>
       </div>
     </div>
-  </div>
+    <nav class="p-3 space-y-1">
+      <button class="w-full flex items-center gap-3 px-3 py-2 rounded-md hover:bg-gray-100 text-gray-700" routerLink="/patient/dashboard"><i class="pi pi-home"></i><span class="font-medium">Dashboard</span></button>
+      <button class="w-full flex items-center gap-3 px-3 py-2 rounded-md hover:bg-gray-100 text-gray-700" routerLink="/prescription/list"><i class="pi pi-file-edit"></i><span class="font-medium">My Prescriptions</span></button>
+      <button class="w-full flex items-center gap-3 px-3 py-2 rounded-md hover:bg-gray-100 text-gray-700" routerLink="/patient/profile"><i class="pi pi-user"></i><span class="font-medium">Profile</span></button>
+      <button class="w-full flex items-center gap-3 px-3 py-2 rounded-md hover:bg-gray-100 text-gray-700" routerLink="/chat"><i class="pi pi-comments"></i><span class="font-medium">AI Consult</span></button>
+    </nav>
+  </aside>
 
-  <div class="grid">
+  <!-- Main -->
+  <main class="flex-1 min-w-0">
+    <p-toolbar styleClass="px-4 lg:px-6 py-3 bg-white border-b border-gray-200 sticky top-0 z-10">
+      <div class="p-toolbar-group-start flex items-center gap-3">
+        <p-breadcrumb [model]="[]" [home]="{icon: 'pi pi-home', routerLink: '/patient/dashboard'}" styleClass="hidden sm:block"></p-breadcrumb>
+      </div>
+      <div class="p-toolbar-group-end flex items-center gap-2">
+        <button pButton icon="pi pi-user-edit" class="p-button-text" (click)="editProfile()" pTooltip="Edit Profile"></button>
+        <button pButton icon="pi pi-sign-out" class="p-button-danger p-button-outlined p-button-sm" (click)="logout()" pTooltip="Logout"></button>
+        <p-avatar label="PA" shape="circle"></p-avatar>
+      </div>
+    </p-toolbar>
+
+    <div class="p-4 lg:p-6">
+      <div class="max-w-7xl mx-auto space-y-6">
+        <!-- Greeting Card -->
+        <div class="rounded-lg shadow-sm bg-gradient-to-r from-indigo-50 to-sky-50 p-5">
+          <div class="flex items-center justify-between">
+            <div>
+              <div class="text-2xl font-semibold">Hello, {{ patient?.firstName || 'there' }} 👋</div>
+              <div class="text-gray-600 mt-1">Here’s a quick overview of your health.</div>
+            </div>
+            <i class="pi pi-heart text-4xl text-indigo-400 greet-icon"></i>
+          </div>
+        </div>
+
+        <!-- Stats Row -->
+        <div class="stats-grid">
+          <p-card class="rounded-lg shadow-sm h-full">
+            <ng-template pTemplate="title">Appointments</ng-template>
+            <ng-template pTemplate="content">
+              <div class="text-3xl font-bold">{{ (prescriptions.length || 0) + 0 }}</div>
+              <div class="text-gray-500">upcoming</div>
+            </ng-template>
+          </p-card>
+          <p-card class="rounded-lg shadow-sm h-full">
+            <ng-template pTemplate="title">Medications</ng-template>
+            <ng-template pTemplate="content">
+              <div class="text-3xl font-bold">{{ prescriptions.length || 0 }}</div>
+              <div class="text-gray-500">recent prescriptions</div>
+            </ng-template>
+          </p-card>
+          <p-card class="rounded-lg shadow-sm h-full">
+            <ng-template pTemplate="title">Allergies</ng-template>
+            <ng-template pTemplate="content">
+              <div class="text-3xl font-bold">—</div>
+              <div class="text-gray-500">reported</div>
+            </ng-template>
+          </p-card>
+        </div>
+
+        <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+          <div class="space-y-6 xl:col-span-2">
+            <!-- Recent Prescriptions (existing table) -->
     <!-- Patient Profile Card -->
     <div class="col-12 lg:col-4">
       <p-card header="My Profile" styleClass="shadow-2 h-full">
@@ -51,7 +109,19 @@
 
     <!-- Prescriptions Card -->
     <div class="col-12 lg:col-8">
-      <p-card header="Recent Prescriptions" styleClass="shadow-2 h-full">
+      <p-card styleClass="shadow-2 h-full">
+        <ng-template pTemplate="header">
+          <div class="flex justify-content-between align-items-center">
+            <span class="text-xl font-semibold">Recent Prescriptions</span>
+            <p-button label="View All" 
+                      icon="pi pi-external-link" 
+                      severity="secondary"
+                      size="small"
+                      [outlined]="true"
+                      routerLink="/prescription/list">
+            </p-button>
+          </div>
+        </ng-template>
         <p-table [value]="prescriptions" [paginator]="true" [rows]="3" 
                  [showCurrentPageReport]="true" responsiveLayout="scroll"
                  currentPageReportTemplate="Showing {first} to {last} of {totalRecords} prescriptions">
@@ -66,21 +136,34 @@
           </ng-template>
           <ng-template pTemplate="body" let-prescription>
             <tr>
-              <td>{{ prescription.date | date:'shortDate' }}</td>
-              <td>{{ prescription.doctorName }}</td>
+              <td>{{ prescription.issuedDate | date:'shortDate' }}</td>
+              <td>Dr. {{ prescription.doctor?.firstName }} {{ prescription.doctor?.lastName }}</td>
               <td>{{ prescription.diagnosis }}</td>
               <td>
-                <ul class="list-none p-0 m-0">
-                  <li *ngFor="let med of prescription.medications" class="text-sm">{{ med }}</li>
-                </ul>
+                <span class="text-sm bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                  {{ prescription.medicines?.length || 0 }} medicines
+                </span>
               </td>
               <td>
-                <p-button icon="pi pi-download" 
-                          severity="secondary" 
-                          size="small"
-                          (onClick)="downloadPrescription(prescription)"
-                          pTooltip="Download PDF">
-                </p-button>
+                <div class="flex gap-1">
+                  <p-button icon="pi pi-eye" 
+                            severity="info" 
+                            size="small"
+                            (onClick)="viewPrescription(prescription)"
+                            pTooltip="View Details"></p-button>
+                  <p-button icon="pi pi-download" 
+                            severity="secondary" 
+                            size="small"
+                            (onClick)="downloadPrescription(prescription)"
+                            [disabled]="!prescription.prescriptionImageUrl"
+                            pTooltip="Download File"></p-button>
+                  <p-button icon="pi pi-shopping-cart" 
+                            severity="success" 
+                            size="small"
+                            (onClick)="orderMedicines(prescription)"
+                            [disabled]="prescription.status !== 'ACTIVE'"
+                            pTooltip="Order Medicines"></p-button>
+                </div>
               </td>
             </tr>
           </ng-template>
@@ -88,8 +171,8 @@
       </p-card>
     </div>
 
-    <!-- Doctor Search Section -->
-    <div class="col-12">
+            <!-- Doctor Search Section -->
+            <div class="col-12">
       <p-card header="Find Doctors" styleClass="shadow-2">
         <div class="mb-4">
           <div class="flex gap-3 align-items-center">
@@ -164,6 +247,54 @@
           <p class="text-600">Searching for doctors...</p>
         </div>
       </p-card>
+            </div>
+          </div>
+
+          <!-- Right Column: Insights & History -->
+          <div class="space-y-6">
+            <p-card class="rounded-lg shadow-sm">
+              <ng-template pTemplate="title">Health Insights</ng-template>
+              <ng-template pTemplate="content">
+                <app-charts></app-charts>
+              </ng-template>
+            </p-card>
+            <p-card class="rounded-lg shadow-sm">
+              <ng-template pTemplate="title">History</ng-template>
+              <ng-template pTemplate="content">
+                <app-history></app-history>
+              </ng-template>
+            </p-card>
+            <p-card class="rounded-lg shadow-sm">
+              <ng-template pTemplate="title">AI Health Assistant</ng-template>
+              <ng-template pTemplate="content">
+                <div class="text-center space-y-4">
+                  <i class="pi pi-comments text-4xl text-primary"></i>
+                  <p class="text-gray-600">Get instant health advice and medical guidance from our AI assistant.</p>
+                  <p-button label="Start AI Consultation" 
+                            icon="pi pi-comments" 
+                            routerLink="/chat"
+                            class="w-full">
+                  </p-button>
+                </div>
+              </ng-template>
+            </p-card>
+          </div>
+        </div>
+      </div>
     </div>
-  </div>
+  </main>
 </div>
+<app-book-appointment-dialog
+  [(visible)]="showBookingDialog"
+  [doctor]="selectedDoctor"
+  [patientId]="patientId"
+  [aiSummary]="aiSummary"
+  [doctorSummary]="doctorSummary"
+  [patientAdvice]="patientAdvice"
+  [prescribedMedicines]="prescribedMedicines"
+  [riskLevel]="riskLevel"
+  [redFlags]="redFlags"
+  [homeRemedies]="homeRemedies"
+  [specializationHint]="specializationHint"
+  (appointmentBooked)="onAppointmentBooked($event)">
+</app-book-appointment-dialog>

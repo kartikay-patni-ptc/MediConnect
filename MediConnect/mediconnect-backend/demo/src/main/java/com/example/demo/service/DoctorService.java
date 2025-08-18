@@ -145,18 +145,28 @@ public class DoctorService {
             return allDoctors;
         }
 
-        // Search by specialization first
-        List<Doctor> specializationResults = repository.findBySpecializationContainingIgnoreCase(searchTerm);
-        System.out.println("Found " + specializationResults.size() + " doctors by specialization");
-
-        // Search by name (first name or last name)
-        List<Doctor> nameResults = repository.findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(searchTerm, searchTerm);
-        System.out.println("Found " + nameResults.size() + " doctors by name");
-
         // Combine results and remove duplicates
         Set<Doctor> uniqueDoctors = new HashSet<>();
-        uniqueDoctors.addAll(specializationResults);
-        uniqueDoctors.addAll(nameResults);
+
+        // Handle multiple specializations separated by commas or other delimiters
+        String[] searchTerms = searchTerm.split("[,;|&+]");
+        
+        for (String term : searchTerms) {
+            String cleanTerm = term.trim();
+            if (!cleanTerm.isEmpty()) {
+                System.out.println("Searching for specialization: " + cleanTerm);
+                
+                // Search by specialization
+                List<Doctor> specializationResults = repository.findBySpecializationContainingIgnoreCase(cleanTerm);
+                System.out.println("Found " + specializationResults.size() + " doctors by specialization '" + cleanTerm + "'");
+                uniqueDoctors.addAll(specializationResults);
+
+                // Search by name (first name or last name) for this term
+                List<Doctor> nameResults = repository.findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(cleanTerm, cleanTerm);
+                System.out.println("Found " + nameResults.size() + " doctors by name '" + cleanTerm + "'");
+                uniqueDoctors.addAll(nameResults);
+            }
+        }
 
         List<Doctor> combinedResults = new ArrayList<>(uniqueDoctors);
 

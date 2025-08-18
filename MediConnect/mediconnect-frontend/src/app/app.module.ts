@@ -2,6 +2,8 @@ import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { HttpClientModule, provideHttpClient, withInterceptors } from '@angular/common/http';
+import { ServiceWorkerModule } from '@angular/service-worker';
+import { isDevMode } from '@angular/core';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { RouterModule } from '@angular/router';
@@ -19,7 +21,11 @@ import { authInterceptor } from './auth/http-interceptor';
     HttpClientModule,
     AppRoutingModule,
     RouterModule, // Import RouterModule to enable routing features
-    ToastModule
+    ToastModule,
+    ServiceWorkerModule.register('ngsw-worker.js', {
+      enabled: !isDevMode(),
+      registrationStrategy: 'registerWhenStable:3000'
+    })
   ],
   providers: [
     provideHttpClient(

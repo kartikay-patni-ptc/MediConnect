@@ -50,6 +50,12 @@ public class PatientController {
         }
     }
 
+    // Aligns with requirement: /api/patient/{id} – fetch patient info
+    @GetMapping("/{userId}")
+    public ResponseEntity<?> getPatientInfo(@PathVariable Long userId) {
+        return getProfile(userId);
+    }
+
     @GetMapping("/dashboard/{userId}")
     public ResponseEntity<?> getDashboard(@PathVariable Long userId) {
         try {

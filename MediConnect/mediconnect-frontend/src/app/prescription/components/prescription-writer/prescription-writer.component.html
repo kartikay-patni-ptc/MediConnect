@@ -1,0 +1,464 @@
+<div class="prescription-writer-container">
+  <p-toast></p-toast>
+  <p-confirmDialog></p-confirmDialog>
+
+  <!-- Header -->
+  <div class="bg-white rounded-lg shadow-sm mb-6 p-6">
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-3xl font-bold text-gray-800 mb-2">
+          <i class="pi pi-prescription text-primary mr-3"></i>
+          Write Prescription
+        </h1>
+        <p class="text-gray-600">Create a detailed prescription for your patient</p>
+      </div>
+      <div class="text-right">
+        <p class="text-sm text-gray-500">Appointment ID</p>
+        <p class="text-lg font-semibold text-primary">#{{ appointmentId }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Form -->
+  <form [formGroup]="prescriptionForm" (ngSubmit)="onSubmit()">
+    <div class="grid grid-cols-1 gap-6">
+      
+      <!-- Clinical Information -->
+      <p-card header="Clinical Information" styleClass="shadow-sm">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Diagnosis -->
+          <div class="col-span-full">
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              Primary Diagnosis *
+            </label>
+            <textarea 
+              pInputTextarea 
+              formControlName="diagnosis"
+              placeholder="Enter the primary diagnosis..."
+              rows="3"
+              class="w-full"
+              [class.ng-invalid]="isFieldInvalid('diagnosis')"
+              [class.ng-dirty]="prescriptionForm.get('diagnosis')?.touched">
+            </textarea>
+            <small 
+              class="text-red-500" 
+              *ngIf="isFieldInvalid('diagnosis')">
+              {{ getFieldError('diagnosis') }}
+            </small>
+          </div>
+
+          <!-- Symptoms -->
+          <div class="col-span-full">
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              Symptoms Presented *
+            </label>
+            <textarea 
+              pInputTextarea 
+              formControlName="symptoms"
+              placeholder="List the symptoms presented by the patient..."
+              rows="3"
+              class="w-full"
+              [class.ng-invalid]="isFieldInvalid('symptoms')"
+              [class.ng-dirty]="prescriptionForm.get('symptoms')?.touched">
+            </textarea>
+            <small 
+              class="text-red-500" 
+              *ngIf="isFieldInvalid('symptoms')">
+              {{ getFieldError('symptoms') }}
+            </small>
+          </div>
+
+          <!-- Doctor Notes -->
+          <div class="col-span-full">
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              Clinical Notes
+            </label>
+            <textarea 
+              pInputTextarea 
+              formControlName="doctorNotes"
+              placeholder="Additional clinical observations, recommendations, or follow-up instructions..."
+              rows="4"
+              class="w-full"
+              [class.ng-invalid]="isFieldInvalid('doctorNotes')"
+              [class.ng-dirty]="prescriptionForm.get('doctorNotes')?.touched">
+            </textarea>
+            <small 
+              class="text-red-500" 
+              *ngIf="isFieldInvalid('doctorNotes')">
+              {{ getFieldError('doctorNotes') }}
+            </small>
+          </div>
+        </div>
+      </p-card>
+
+      <!-- Quick Medicine Templates -->
+      <p-card header="Quick Medicine Templates" styleClass="shadow-sm">
+        <div class="flex flex-wrap gap-3">
+          <p-button 
+            label="Paracetamol" 
+            icon="pi pi-plus"
+            size="small"
+            severity="secondary"
+            (onClick)="addCommonMedicine('paracetamol')">
+          </p-button>
+          <p-button 
+            label="Amoxicillin" 
+            icon="pi pi-plus"
+            size="small"
+            severity="secondary"
+            (onClick)="addCommonMedicine('amoxicillin')">
+          </p-button>
+          <p-button 
+            label="Omeprazole" 
+            icon="pi pi-plus"
+            size="small"
+            severity="secondary"
+            (onClick)="addCommonMedicine('omeprazole')">
+          </p-button>
+        </div>
+      </p-card>
+
+      <!-- Medicines Section -->
+      <p-card styleClass="shadow-sm">
+        <ng-template pTemplate="header">
+          <div class="flex items-center justify-between w-full">
+            <span class="text-lg font-semibold">
+              <i class="pi pi-pills mr-2"></i>
+              Prescribed Medicines
+            </span>
+            <p-button 
+              label="Add Medicine" 
+              icon="pi pi-plus"
+              size="small"
+              (onClick)="addMedicine()">
+            </p-button>
+          </div>
+        </ng-template>
+
+        <div formArrayName="medicines" class="space-y-6">
+          <div 
+            *ngFor="let medicine of medicines.controls; let i = index" 
+            [formGroupName]="i"
+            class="medicine-item border border-gray-200 rounded-lg p-4 bg-gray-50">
+            
+            <!-- Medicine Header -->
+            <div class="flex items-center justify-between mb-4">
+              <h4 class="text-lg font-medium text-gray-800">
+                Medicine {{ i + 1 }}
+              </h4>
+              <div class="flex gap-2">
+                <p-button 
+                  icon="pi pi-copy" 
+                  size="small"
+                  severity="secondary"
+                  (onClick)="duplicateMedicine(i)"
+                  pTooltip="Duplicate Medicine">
+                </p-button>
+                <p-button 
+                  icon="pi pi-trash" 
+                  size="small"
+                  severity="danger"
+                  (onClick)="removeMedicine(i)"
+                  [disabled]="medicines.length === 1"
+                  pTooltip="Remove Medicine">
+                </p-button>
+              </div>
+            </div>
+
+            <!-- Medicine Details Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              
+              <!-- Medicine Name -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  Medicine Name *
+                </label>
+                <input 
+                  pInputText 
+                  formControlName="medicineName"
+                  placeholder="e.g., Amoxicillin"
+                  class="w-full"
+                  [class.ng-invalid]="isFieldInvalid('medicineName', i)"
+                  [class.ng-dirty]="medicines.at(i).get('medicineName')?.touched">
+                <small 
+                  class="text-red-500" 
+                  *ngIf="isFieldInvalid('medicineName', i)">
+                  {{ getFieldError('medicineName', i) }}
+                </small>
+              </div>
+
+              <!-- Generic Name -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  Generic Name *
+                </label>
+                <input 
+                  pInputText 
+                  formControlName="genericName"
+                  placeholder="e.g., Amoxicillin"
+                  class="w-full"
+                  [class.ng-invalid]="isFieldInvalid('genericName', i)"
+                  [class.ng-dirty]="medicines.at(i).get('genericName')?.touched">
+                <small 
+                  class="text-red-500" 
+                  *ngIf="isFieldInvalid('genericName', i)">
+                  {{ getFieldError('genericName', i) }}
+                </small>
+              </div>
+
+              <!-- Dosage -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  Dosage *
+                </label>
+                <input 
+                  pInputText 
+                  formControlName="dosage"
+                  placeholder="e.g., 500mg"
+                  class="w-full"
+                  [class.ng-invalid]="isFieldInvalid('dosage', i)"
+                  [class.ng-dirty]="medicines.at(i).get('dosage')?.touched">
+                <small 
+                  class="text-red-500" 
+                  *ngIf="isFieldInvalid('dosage', i)">
+                  {{ getFieldError('dosage', i) }}
+                </small>
+              </div>
+
+              <!-- Frequency -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  Frequency *
+                </label>
+                <p-dropdown 
+                  formControlName="frequency"
+                  [options]="frequencyOptions"
+                  placeholder="Select frequency"
+                  [showClear]="true"
+                  class="w-full"
+                  [class.ng-invalid]="isFieldInvalid('frequency', i)"
+                  [class.ng-dirty]="medicines.at(i).get('frequency')?.touched">
+                </p-dropdown>
+                <small 
+                  class="text-red-500" 
+                  *ngIf="isFieldInvalid('frequency', i)">
+                  {{ getFieldError('frequency', i) }}
+                </small>
+              </div>
+
+              <!-- Duration -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  Duration *
+                </label>
+                <p-dropdown 
+                  formControlName="duration"
+                  [options]="durationOptions"
+                  placeholder="Select duration"
+                  [showClear]="true"
+                  class="w-full"
+                  [class.ng-invalid]="isFieldInvalid('duration', i)"
+                  [class.ng-dirty]="medicines.at(i).get('duration')?.touched">
+                </p-dropdown>
+                <small 
+                  class="text-red-500" 
+                  *ngIf="isFieldInvalid('duration', i)">
+                  {{ getFieldError('duration', i) }}
+                </small>
+              </div>
+
+              <!-- Quantity -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  Quantity *
+                </label>
+                <p-inputNumber 
+                  formControlName="quantity"
+                  placeholder="Enter quantity"
+                  [min]="1"
+                  [max]="1000"
+                  [showButtons]="true"
+                  buttonLayout="horizontal"
+                  incrementButtonIcon="pi pi-plus"
+                  decrementButtonIcon="pi pi-minus"
+                  class="w-full"
+                  [class.ng-invalid]="isFieldInvalid('quantity', i)"
+                  [class.ng-dirty]="medicines.at(i).get('quantity')?.touched">
+                </p-inputNumber>
+                <small 
+                  class="text-red-500" 
+                  *ngIf="isFieldInvalid('quantity', i)">
+                  {{ getFieldError('quantity', i) }}
+                </small>
+              </div>
+
+              <!-- Instructions -->
+              <div class="col-span-full">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  Instructions *
+                </label>
+                <p-dropdown 
+                  formControlName="instructions"
+                  [options]="instructionOptions"
+                  placeholder="Select instructions"
+                  [showClear]="true"
+                  class="w-full"
+                  [class.ng-invalid]="isFieldInvalid('instructions', i)"
+                  [class.ng-dirty]="medicines.at(i).get('instructions')?.touched">
+                </p-dropdown>
+                <small 
+                  class="text-red-500" 
+                  *ngIf="isFieldInvalid('instructions', i)">
+                  {{ getFieldError('instructions', i) }}
+                </small>
+              </div>
+
+              <!-- Medicine Type -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  Medicine Type *
+                </label>
+                <p-dropdown 
+                  formControlName="medicineType"
+                  [options]="medicineTypes"
+                  placeholder="Select type"
+                  optionLabel="label"
+                  optionValue="value"
+                  class="w-full"
+                  [class.ng-invalid]="isFieldInvalid('medicineType', i)"
+                  [class.ng-dirty]="medicines.at(i).get('medicineType')?.touched">
+                </p-dropdown>
+              </div>
+
+              <!-- Special Instructions -->
+              <div class="col-span-full">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  Special Instructions
+                </label>
+                <textarea 
+                  pInputTextarea 
+                  formControlName="specialInstructions"
+                  placeholder="Any special instructions for this medicine..."
+                  rows="2"
+                  class="w-full">
+                </textarea>
+              </div>
+
+              <!-- Side Effects -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  Side Effects
+                </label>
+                <textarea 
+                  pInputTextarea 
+                  formControlName="sideEffects"
+                  placeholder="Known side effects..."
+                  rows="2"
+                  class="w-full">
+                </textarea>
+              </div>
+
+              <!-- Contraindications -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  Contraindications
+                </label>
+                <textarea 
+                  pInputTextarea 
+                  formControlName="contraindications"
+                  placeholder="When not to use..."
+                  rows="2"
+                  class="w-full">
+                </textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Add Medicine Button -->
+        <div class="mt-6 text-center" *ngIf="medicines.length > 0">
+          <p-button 
+            label="Add Another Medicine" 
+            icon="pi pi-plus"
+            severity="secondary"
+            [outlined]="true"
+            (onClick)="addMedicine()">
+          </p-button>
+        </div>
+      </p-card>
+
+      <!-- Form Actions -->
+      <div class="flex items-center justify-between bg-white rounded-lg shadow-sm p-6">
+        <p-button 
+          label="Cancel" 
+          icon="pi pi-times"
+          severity="secondary"
+          [outlined]="true"
+          routerLink="/doctor/dashboard">
+        </p-button>
+
+        <div class="flex gap-3">
+          <p-button 
+            label="Save as Draft" 
+            icon="pi pi-save"
+            severity="secondary"
+            [outlined]="true"
+            [disabled]="loading">
+          </p-button>
+          
+          <p-button 
+            label="Create Prescription" 
+            icon="pi pi-check"
+            type="submit"
+            [loading]="loading"
+            [disabled]="!prescriptionForm.valid">
+          </p-button>
+        </div>
+      </div>
+    </div>
+  </form>
+
+  <!-- File Upload Dialog -->
+  <p-dialog 
+    header="Upload Prescription File" 
+    [(visible)]="showFileUpload" 
+    [modal]="true" 
+    [closable]="false"
+    [style]="{width: '500px'}">
+    
+    <div class="text-center space-y-4">
+      <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+        <i class="pi pi-check-circle text-green-600 text-3xl mb-2"></i>
+        <h3 class="text-lg font-semibold text-green-800">Prescription Created Successfully!</h3>
+        <p class="text-green-600">Now you can upload a prescription image or PDF file.</p>
+      </div>
+
+      <p-fileUpload 
+        mode="basic"
+        name="prescription"
+        accept="image/*,application/pdf"
+        [maxFileSize]="10000000"
+        chooseLabel="Choose File"
+        [auto]="true"
+        (onUpload)="onFileUpload($event)"
+        [disabled]="uploadingFile">
+      </p-fileUpload>
+
+      <div class="flex justify-center gap-3 mt-6">
+        <p-button 
+          label="Skip Upload" 
+          icon="pi pi-arrow-right"
+          severity="secondary"
+          [outlined]="true"
+          (onClick)="skipFileUpload()"
+          [disabled]="uploadingFile">
+        </p-button>
+      </div>
+
+      <div *ngIf="uploadingFile" class="flex items-center justify-center gap-2">
+        <p-progressSpinner [style]="{width: '20px', height: '20px'}"></p-progressSpinner>
+        <span class="text-sm text-gray-600">Uploading file...</span>
+      </div>
+    </div>
+  </p-dialog>
+</div>

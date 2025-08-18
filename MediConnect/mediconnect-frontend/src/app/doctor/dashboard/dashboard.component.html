@@ -5,8 +5,8 @@
     <div class="p-4 flex items-center gap-3 border-b border-gray-200">
       <p-avatar label="DO" shape="circle" styleClass="bg-blue-500 text-white"></p-avatar>
       <div>
-        <div class="font-semibold">Dr. Kartikay</div>
-        <div class="text-sm text-gray-500">Cardiologist</div>
+        <div class="font-semibold">Dr. {{ currentUser?.firstName || 'Kartikay' }}</div>
+        <div class="text-sm text-gray-500">{{ currentUser?.specialization || 'Cardiologist' }}</div>
       </div>
     </div>
 
@@ -23,8 +23,8 @@
     <div class="p-4 flex items-center gap-3 border-b">
       <p-avatar label="DO" shape="circle" styleClass="bg-blue-500 text-white"></p-avatar>
       <div>
-        <div class="font-semibold">Dr. Onichaan</div>
-        <div class="text-sm text-gray-500">Cardiologist</div>
+        <div class="font-semibold">Dr. {{ currentUser?.firstName || 'Kartikay' }}</div>
+        <div class="text-sm text-gray-500">{{ currentUser?.specialization || 'Cardiologist' }}</div>
       </div>
     </div>
     <nav class="p-3 space-y-1">
@@ -48,7 +48,7 @@
           <i class="pi pi-search"></i>
           <input pInputText type="text" placeholder="Search appointments" [(ngModel)]="searchQuery" (input)="onGlobalFilter()" class="w-44 sm:w-64" />
         </span>
-        <p-splitButton label="New" icon="pi pi-plus" [model]="actionItems"></p-splitButton>
+        <p-splitButton label="Actions" icon="pi pi-plus" [model]="actionItems"></p-splitButton>
         <button pButton icon="pi pi-bell" class="p-button-text" pTooltip="Notifications"></button>
         <button pButton icon="pi pi-home" class="p-button-outlined p-button-sm" (click)="goToHome()" pTooltip="Go to Home"></button>
         <button pButton icon="pi pi-sign-out" class="p-button-danger p-button-outlined p-button-sm" (click)="logout()" pTooltip="Logout"></button>
@@ -70,38 +70,226 @@
           <p-fileUpload name="prescriptions[]" mode="advanced" [customUpload]="true" (uploadHandler)="onUpload($event)" chooseLabel="Choose" uploadLabel="Upload" cancelLabel="Cancel" accept=".pdf,.jpg,.jpeg,.png" [maxFileSize]="5000000"></p-fileUpload>
         </p-dialog>
 
+        <!-- Appointment Details Dialog -->
+        <p-dialog header="Appointment Details" [(visible)]="showAppointmentDialog" [modal]="true" [style]="{width: '50rem'}" [draggable]="false" [resizable]="false">
+          <div *ngIf="selectedAppointment" class="space-y-6">
+            <!-- Patient Information -->
+            <div class="bg-blue-50 p-4 rounded-lg">
+              <h3 class="text-lg font-semibold text-blue-900 mb-3">Patient Information</h3>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="text-sm font-medium text-gray-600">Patient Name</label>
+                  <p class="text-gray-900">{{ selectedAppointment.patientName }}</p>
+                </div>
+                <div>
+                  <label class="text-sm font-medium text-gray-600">Appointment ID</label>
+                  <p class="text-gray-900">{{ selectedAppointment.id }}</p>
+                </div>
+                <div>
+                  <label class="text-sm font-medium text-gray-600">Appointment Date & Time</label>
+                  <p class="text-gray-900">{{ selectedAppointment.time }}</p>
+                </div>
+                <div>
+                  <label class="text-sm font-medium text-gray-600">Status</label>
+                  <p-tag [value]="selectedAppointment.status" [severity]="getStatusSeverity(selectedAppointment.status)"></p-tag>
+                </div>
+              </div>
+            </div>
+
+          <!-- AI Summary -->
+          <div *ngIf="selectedAppointment.aiSummary || selectedAppointment.patientAdvice || selectedAppointment.doctorSummary" class="bg-yellow-50 p-4 rounded-lg">
+            <h3 class="text-lg font-semibold text-yellow-900 mb-3">
+              <i class="pi pi-robot mr-2"></i>AI Health Assessment
+            </h3>
+            <div class="space-y-3">
+              <!-- Patient Advice -->
+              <div *ngIf="selectedAppointment.patientAdvice">
+                <label class="text-sm font-medium text-gray-600">Patient Advice</label>
+                <p class="text-gray-900 bg-white p-3 rounded border">{{ selectedAppointment.patientAdvice }}</p>
+              </div>
+              
+              <!-- Doctor Summary -->
+              <div *ngIf="selectedAppointment.doctorSummary">
+                <label class="text-sm font-medium text-gray-600">AI Diagnosis Summary</label>
+                <div class="text-gray-900 bg-white p-3 rounded border">
+                  <pre class="whitespace-pre-wrap text-sm">{{ selectedAppointment.doctorSummary }}</pre>
+                </div>
+              </div>
+              
+              <!-- Fallback to old aiSummary format if new fields are not available -->
+              <div *ngIf="!selectedAppointment.patientAdvice && selectedAppointment.aiSummary">
+                <label class="text-sm font-medium text-gray-600">AI Summary</label>
+                <p class="text-gray-900 bg-white p-3 rounded border">{{ selectedAppointment.aiSummary }}</p>
+              </div>
+              
+              <!-- Risk Level Badge -->
+              <div *ngIf="selectedAppointment.riskLevel || (selectedAppointment.aiSummary && selectedAppointment.aiSummary.riskLevel)">
+                <label class="text-sm font-medium text-gray-600">Risk Level</label>
+                <div class="risk-level-badge" [ngClass]="'risk-' + (selectedAppointment.riskLevel || (selectedAppointment.aiSummary && selectedAppointment.aiSummary.riskLevel) || 'medium').toLowerCase()">
+                  <i class="pi pi-exclamation-triangle mr-1"></i>
+                  {{ selectedAppointment.riskLevel || (selectedAppointment.aiSummary && selectedAppointment.aiSummary.riskLevel) }}
+                </div>
+              </div>
+              
+              <!-- Red Flags -->
+              <div *ngIf="selectedAppointment.redFlags && selectedAppointment.redFlags.length > 0">
+                <label class="text-sm font-medium text-red-600">Warning Signs</label>
+                <ul class="red-flags-list">
+                  <li *ngFor="let flag of selectedAppointment.redFlags" class="red-flag-item">
+                    {{ flag }}
+                  </li>
+                </ul>
+              </div>
+              
+              <!-- Home Remedies -->
+              <div *ngIf="selectedAppointment.homeRemedies && selectedAppointment.homeRemedies.length > 0">
+                <label class="text-sm font-medium text-green-600">Home Care Recommendations</label>
+                <ul class="remedies-list">
+                  <li *ngFor="let remedy of selectedAppointment.homeRemedies" class="remedy-item">
+                    {{ remedy }}
+                  </li>
+                </ul>
+              </div>
+              
+              <!-- Specialist Recommendation -->
+              <div *ngIf="selectedAppointment.specializationHint || (selectedAppointment.aiSummary && selectedAppointment.aiSummary.specializationHint)">
+                <label class="text-sm font-medium text-blue-600">Specialist Recommendation</label>
+                <div class="specialist-hint">
+                  Consider consulting a <strong>{{ selectedAppointment.specializationHint || (selectedAppointment.aiSummary && selectedAppointment.aiSummary.specializationHint) }} specialist</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Doctor-Focused Clinical Summary -->
+          <div *ngIf="selectedAppointment.doctorSummary" class="bg-blue-50 p-4 rounded-lg">
+            <h3 class="text-lg font-semibold text-blue-900 mb-3">
+              <i class="pi pi-stethoscope mr-2"></i>Doctor-Focused Clinical Summary
+            </h3>
+            <div class="space-y-3">
+              <div *ngIf="selectedAppointment.doctorSummary.chiefComplaint">
+                <label class="text-sm font-medium text-gray-600">Chief Complaint</label>
+                <p class="text-gray-900 bg-white p-3 rounded border">{{ selectedAppointment.doctorSummary.chiefComplaint }}</p>
+              </div>
+              <div *ngIf="selectedAppointment.doctorSummary.historyOfPresentIllness">
+                <label class="text-sm font-medium text-gray-600">History of Present Illness</label>
+                <p class="text-gray-900 bg-white p-3 rounded border">{{ selectedAppointment.doctorSummary.historyOfPresentIllness }}</p>
+              </div>
+              <div *ngIf="selectedAppointment.doctorSummary.medicalHistory">
+                <label class="text-sm font-medium text-gray-600">Relevant Medical History</label>
+                <p class="text-gray-900 bg-white p-3 rounded border">{{ selectedAppointment.doctorSummary.medicalHistory }}</p>
+              </div>
+              <div *ngIf="selectedAppointment.doctorSummary.assessment">
+                <label class="text-sm font-medium text-gray-600">Assessment</label>
+                <p class="text-gray-900 bg-white p-3 rounded border">{{ selectedAppointment.doctorSummary.assessment }}</p>
+              </div>
+              <div *ngIf="selectedAppointment.doctorSummary.plan">
+                <label class="text-sm font-medium text-gray-600">Plan</label>
+                <p class="text-gray-900 bg-white p-3 rounded border">{{ selectedAppointment.doctorSummary.plan }}</p>
+              </div>
+              <div *ngIf="selectedAppointment.doctorSummary.specialistRecommendation">
+                <label class="text-sm font-medium text-gray-600">Specialist Recommendation</label>
+                <p class="text-gray-900 bg-white p-3 rounded border">{{ selectedAppointment.doctorSummary.specialistRecommendation }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Prescribed Medicines -->
+          <div *ngIf="(selectedAppointment.prescribedMedicines && selectedAppointment.prescribedMedicines.length > 0) || (selectedAppointment.doctorSummary && selectedAppointment.doctorSummary.prescribedMedicines && selectedAppointment.doctorSummary.prescribedMedicines.length > 0)" class="bg-purple-50 p-4 rounded-lg">
+            <h3 class="text-lg font-semibold text-purple-900 mb-3">
+              <i class="pi pi-pills mr-2"></i>Prescribed Medicines
+            </h3>
+            <div class="medicines-grid">
+              <div *ngFor="let med of (selectedAppointment.prescribedMedicines || (selectedAppointment.doctorSummary && selectedAppointment.doctorSummary.prescribedMedicines))" class="medicine-card">
+                <div class="medicine-name">{{ med.name }}</div>
+                <div class="medicine-details">
+                  <span class="dose">{{ med.dose }}</span>
+                  <span class="frequency">{{ med.frequency }}</span>
+                  <span class="duration">for {{ med.duration }}</span>
+                </div>
+                <div class="medicine-type" [ngClass]="med.otcOrPrescription.toLowerCase()">
+                  {{ med.otcOrPrescription }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+            <!-- Patient Notes -->
+            <div *ngIf="selectedAppointment.notes" class="bg-yellow-50 p-4 rounded-lg">
+              <h3 class="text-lg font-semibold text-yellow-900 mb-3">Patient Notes</h3>
+              <p class="text-gray-900 bg-white p-3 rounded border">{{ selectedAppointment.notes }}</p>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex justify-between items-center pt-4 border-t">
+              <div class="flex gap-3">
+                <button pButton label="Write Prescription" 
+                        icon="pi pi-prescription" 
+                        class="p-button-primary"
+                        (click)="writePrescription(selectedAppointment.id)"
+                        [disabled]="selectedAppointment.status === 'Cancelled'"
+                        pTooltip="Create prescription for this patient"></button>
+              </div>
+              <div class="flex gap-3">
+                <button pButton label="Cancel Appointment" 
+                        icon="pi pi-times" 
+                        class="p-button-danger p-button-outlined"
+                        (click)="cancelAppointment(selectedAppointment.id)"
+                        [disabled]="selectedAppointment.status === 'Cancelled'"></button>
+                <button pButton label="Mark Complete" 
+                        icon="pi pi-check" 
+                        class="p-button-success"
+                        (click)="completeAppointment(selectedAppointment.id)"
+                        [disabled]="selectedAppointment.status === 'Completed' || selectedAppointment.status === 'Cancelled'"></button>
+                <button pButton label="Start Consultation" 
+                        icon="pi pi-play" 
+                        class="p-button-primary"
+                        (click)="startConsultation(selectedAppointment.id)"
+                        [disabled]="selectedAppointment.status === 'Completed' || selectedAppointment.status === 'Cancelled'"></button>
+              </div>
+            </div>
+          </div>
+        </p-dialog>
+
         <!-- Gradient Greeting Card -->
         <div class="rounded-lg shadow-sm bg-gradient-to-r from-blue-50 to-indigo-50 p-5">
           <div class="flex items-center justify-between">
             <div>
               <div class="text-2xl font-semibold">{{ greeting }}</div>
-              <div class="text-gray-600 mt-1">Here’s a quick overview of your day.</div>
+              <div class="text-gray-600 mt-1">Here's a quick overview of your appointments today.</div>
             </div>
             <img src="assets/illustrations/doctor-hero.svg" alt="Doctor" class="h-20 w-auto" />
           </div>
         </div>
 
         <!-- Stats: Single Row -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
           <p-card class="rounded-lg shadow-sm h-full">
-            <ng-template pTemplate="title">Total Patients</ng-template>
+            <ng-template pTemplate="title">Total Appointments</ng-template>
             <ng-template pTemplate="content">
-              <div class="text-3xl font-bold">{{ patientStats.totalPatients }}</div>
-              <div class="text-gray-500">active patients</div>
+              <div class="text-3xl font-bold text-blue-600">{{ patientStats.totalPatients }}</div>
+              <div class="text-gray-500">this month</div>
             </ng-template>
           </p-card>
           <p-card class="rounded-lg shadow-sm h-full">
-            <ng-template pTemplate="title">New this week</ng-template>
+            <ng-template pTemplate="title">Pending</ng-template>
             <ng-template pTemplate="content">
-              <div class="text-3xl font-bold">{{ patientStats.newThisWeek }}</div>
-              <div class="text-gray-500">registered</div>
+              <div class="text-3xl font-bold text-orange-600">{{ patientStats.awaiting }}</div>
+              <div class="text-gray-500">awaiting confirmation</div>
             </ng-template>
           </p-card>
           <p-card class="rounded-lg shadow-sm h-full">
-            <ng-template pTemplate="title">Awaiting</ng-template>
+            <ng-template pTemplate="title">Today's Appointments</ng-template>
             <ng-template pTemplate="content">
-              <div class="text-3xl font-bold">{{ patientStats.awaiting }}</div>
-              <div class="text-gray-500">in queue</div>
+              <div class="text-3xl font-bold text-green-600">{{ patientStats.newThisWeek }}</div>
+              <div class="text-gray-500">scheduled</div>
+            </ng-template>
+          </p-card>
+          <p-card class="rounded-lg shadow-sm h-full">
+            <ng-template pTemplate="title">Completed</ng-template>
+            <ng-template pTemplate="content">
+              <div class="text-3xl font-bold text-purple-600">{{ completedAppointments }}</div>
+              <div class="text-gray-500">this week</div>
             </ng-template>
           </p-card>
         </div>
@@ -110,9 +298,9 @@
         <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
           <!-- Left Column: Schedule + Table -->
           <div class="space-y-6 xl:col-span-2">
-            <!-- Today’s Schedule -->
+            <!-- Today's Schedule -->
             <p-card class="rounded-lg shadow-sm">
-              <ng-template pTemplate="title">Today’s Schedule</ng-template>
+              <ng-template pTemplate="title">Today's Schedule</ng-template>
               <ng-template pTemplate="content">
                 <div class="space-y-2">
                   <div *ngFor="let s of todaySchedule" class="group flex items-center justify-between rounded-md px-3 py-3 hover:bg-gray-50">
@@ -141,6 +329,7 @@
                       <th>Time</th>
                       <th>Type</th>
                       <th>Status</th>
+                      <th>Actions</th>
                     </tr>
                   </ng-template>
                   <ng-template pTemplate="body" let-row>
@@ -155,13 +344,35 @@
                       <td>
                         <p-tag [value]="row.status" [severity]="getStatusSeverity(row.status)"></p-tag>
                       </td>
+                      <td>
+                        <div class="flex gap-2">
+                          <button pButton icon="pi pi-eye" 
+                                  class="p-button-text p-button-sm" 
+                                  (click)="viewAppointmentDetails(row)"
+                                  pTooltip="View Details"></button>
+                          <button pButton icon="pi pi-check" 
+                                  class="p-button-text p-button-sm p-button-success" 
+                                  (click)="completeAppointment(row.id)"
+                                  [disabled]="row.status === 'Completed' || row.status === 'Cancelled'"
+                                  pTooltip="Mark Complete"></button>
+                          <button pButton icon="pi pi-times" 
+                                  class="p-button-text p-button-sm p-button-danger" 
+                                  (click)="cancelAppointment(row.id)"
+                                  [disabled]="row.status === 'Cancelled'"
+                                  pTooltip="Cancel Appointment"></button>
+                        </div>
+                      </td>
                     </tr>
                   </ng-template>
 
                   <ng-template pTemplate="emptymessage">
                     <tr>
-                      <td colspan="5">
-                        <div class="text-center py-10 text-gray-500">No appointments found</div>
+                      <td colspan="6">
+                        <div class="text-center py-10 text-gray-500">
+                          <i class="pi pi-calendar-times text-4xl mb-3 text-gray-300"></i>
+                          <p>No appointments found</p>
+                          <p class="text-sm">All clear for today!</p>
+                        </div>
                       </td>
                     </tr>
                   </ng-template>
@@ -176,6 +387,31 @@
               <ng-template pTemplate="title">Calendar</ng-template>
               <ng-template pTemplate="content">
                 <p-calendar [(ngModel)]="selectedDate" [inline]="true"></p-calendar>
+              </ng-template>
+            </p-card>
+
+            <!-- Quick Actions -->
+            <p-card class="rounded-lg shadow-sm">
+              <ng-template pTemplate="title">Quick Actions</ng-template>
+              <ng-template pTemplate="content">
+                <div class="space-y-3">
+                  <button pButton label="My Prescriptions" 
+                          icon="pi pi-list" 
+                          class="p-button-outlined w-full"
+                          (click)="onNavClick('prescriptions')"></button>
+                  <button pButton label="View All Appointments" 
+                          icon="pi pi-calendar" 
+                          class="p-button-outlined w-full"
+                          (click)="viewAllAppointments()"></button>
+                  <button pButton label="Manage Slots" 
+                          icon="pi pi-clock" 
+                          class="p-button-outlined w-full"
+                          (click)="manageSlots()"></button>
+                  <button pButton label="Patient Records" 
+                          icon="pi pi-users" 
+                          class="p-button-outlined w-full"
+                          (click)="viewPatientRecords()"></button>
+                </div>
               </ng-template>
             </p-card>
           </div>

@@ -1,0 +1,6 @@
+.mb-2 { margin-bottom: 0.75rem; }
+.text-red-500 { color: #ef4444; }
+.bg-blue-50 { background: #eff6ff; }
+.p-button-primary { background: #2563eb; border: none; }
+.space-y-4 > * + * { margin-top: 1rem; }
+

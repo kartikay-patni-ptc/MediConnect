@@ -7,7 +7,9 @@ export const routes: Routes = [
   { path: 'auth', loadChildren: () => import('./auth/auth.module').then(m => m.AuthModule) },
   { path: 'doctor', loadChildren: () => import('./doctor/doctor.module').then(m => m.DoctorModule) },
   { path: 'patient', loadChildren: () => import('./patient/patient.module').then(m => m.PatientModule) },
+  { path: 'chat', loadChildren: () => import('./ai-chat/ai-chat.module').then(m => m.AiChatModule) },
   { path: 'pharmacist', loadChildren: () => import('./pharmacist/pharmacist.module').then(m => m.PharmacistModule) },
+  { path: 'prescription', loadChildren: () => import('./prescription/prescription.module').then(m => m.PrescriptionModule) },
   { path: '**', redirectTo: 'home' }
 ];
 
