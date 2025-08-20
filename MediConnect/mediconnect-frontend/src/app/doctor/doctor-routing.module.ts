@@ -2,11 +2,13 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { DoctorProfileComponent } from './profile/doctor-profile.component';
+import { SlotManagementComponent } from './slot-management/slot-management.component';
 
 const routes: Routes = [
   { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
   { path: 'dashboard', component: DashboardComponent },
-  { path: 'profile', component: DoctorProfileComponent }
+  { path: 'profile', component: DoctorProfileComponent },
+  { path: 'slots', component: SlotManagementComponent }
 ];
 
 @NgModule({

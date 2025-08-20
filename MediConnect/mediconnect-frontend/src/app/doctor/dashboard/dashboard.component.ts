@@ -408,13 +408,9 @@ export class DashboardComponent implements OnInit {
   }
 
   manageSlots(): void {
-    this.messageService.add({
-      severity: 'info',
-      summary: 'Manage Slots',
-      detail: 'Open slot management interface'
-    });
+    
     // Navigate to slot management page
-    // this.router.navigate(['/doctor/slots']);
+     this.router.navigate(['/doctor/slots']);
   }
 
   viewPatientRecords(): void {
