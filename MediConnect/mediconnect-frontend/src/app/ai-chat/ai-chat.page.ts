@@ -47,6 +47,8 @@ export class AiChatPageComponent implements OnInit, OnDestroy {
 	selectedDoctor: Doctor | null = null;
 	patientId: number = 0;
 	aiSummary: string | null = null;
+	currentUser: any;
+	userRole: string = '';
 
 	// Enhanced state management
 	private destroy$ = new Subject<void>();
@@ -105,6 +107,8 @@ export class AiChatPageComponent implements OnInit, OnDestroy {
 	}
 
 	ngOnInit() {
+		this.currentUser = this.auth.getCurrentUser();
+		this.userRole = this.currentUser?.role || '';
 		this.loadHistory();
 		this.setupErrorHandling();
 		this.loadConversationContext();

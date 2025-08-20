@@ -33,6 +33,7 @@ import { OrderTrackingComponent } from './components/order-tracking/order-tracki
 
 const routes = [
   { path: 'write/:appointmentId', component: PrescriptionWriterComponent },
+  { path: 'write', component: PrescriptionWriterComponent },
   { path: 'list', component: PrescriptionListComponent },
   { path: 'view/:prescriptionId', component: PrescriptionViewerComponent },
   { path: 'order/:prescriptionId', component: MedicineOrderComponent },

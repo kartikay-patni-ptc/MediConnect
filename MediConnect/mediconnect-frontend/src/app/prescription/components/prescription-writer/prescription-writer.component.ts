@@ -84,14 +84,17 @@ export class PrescriptionWriterComponent implements OnInit {
 
   ngOnInit(): void {
     this.appointmentId = Number(this.route.snapshot.paramMap.get('appointmentId'));
-    if (!this.appointmentId) {
-      this.messageService.add({
-        severity: 'error',
-        summary: 'Error',
-        detail: 'Invalid appointment ID'
-      });
-      this.router.navigate(['/doctor/dashboard']);
+    // Appointment ID is optional now - can write prescriptions without appointments
+    if (this.appointmentId) {
+      // Load appointment details if available
+      this.loadAppointmentDetails();
     }
+  }
+
+  private loadAppointmentDetails(): void {
+    // This would load appointment details if an appointment ID is provided
+    // For now, we'll just set a flag
+    console.log('Loading appointment details for ID:', this.appointmentId);
   }
 
   private initializeForm(): void {
@@ -174,7 +177,7 @@ export class PrescriptionWriterComponent implements OnInit {
       
       const formValue = this.prescriptionForm.value;
       const request: CreatePrescriptionRequest = {
-        appointmentId: this.appointmentId,
+        appointmentId: this.appointmentId || undefined,
         diagnosis: formValue.diagnosis,
         symptoms: formValue.symptoms,
         doctorNotes: formValue.doctorNotes,
