@@ -3,9 +3,37 @@
   <aside class="sidebar">
     <div class="logo">MediConnect</div>
     <nav>
-      <a routerLink="/patient/dashboard"><i class="pi pi-home"></i> Dashboard</a>
-      <a class="active"><i class="pi pi-comments"></i> AI Consult</a>
-      <a routerLink="/patient/profile"><i class="pi pi-user"></i> Profile</a>
+      <!-- Dynamic navigation based on user role -->
+      <ng-container [ngSwitch]="userRole">
+        <!-- Patient Navigation -->
+        <ng-container *ngSwitchCase="'PATIENT'">
+          <a routerLink="/patient/dashboard"><i class="pi pi-home"></i> Dashboard</a>
+          <a class="active"><i class="pi pi-comments"></i> AI Consult</a>
+          <a routerLink="/patient/profile"><i class="pi pi-user"></i> Profile</a>
+          <a routerLink="/patient/history"><i class="pi pi-history"></i> Medical History</a>
+        </ng-container>
+        
+        <!-- Doctor Navigation -->
+        <ng-container *ngSwitchCase="'DOCTOR'">
+          <a routerLink="/doctor/dashboard"><i class="pi pi-home"></i> Dashboard</a>
+          <a class="active"><i class="pi pi-comments"></i> AI Consult</a>
+          <a routerLink="/doctor/profile"><i class="pi pi-user"></i> Profile</a>
+          <a routerLink="/doctor/slots"><i class="pi pi-clock"></i> Manage Slots</a>
+        </ng-container>
+        
+        <!-- Pharmacist Navigation -->
+        <ng-container *ngSwitchCase="'PHARMACIST'">
+          <a routerLink="/pharmacist/dashboard"><i class="pi pi-home"></i> Dashboard</a>
+          <a class="active"><i class="pi pi-comments"></i> AI Consult</a>
+          <a routerLink="/pharmacist/profile"><i class="pi pi-user"></i> Profile</a>
+        </ng-container>
+        
+        <!-- Default Navigation -->
+        <ng-container *ngSwitchDefault>
+          <a routerLink="/home"><i class="pi pi-home"></i> Home</a>
+          <a class="active"><i class="pi pi-comments"></i> AI Consult</a>
+        </ng-container>
+      </ng-container>
     </nav>
   </aside>
 

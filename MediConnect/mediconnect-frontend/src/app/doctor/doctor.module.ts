@@ -10,6 +10,7 @@ import { ToastModule } from 'primeng/toast';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { DoctorProfileComponent } from './profile/doctor-profile.component';
 import { SlotManagementComponent } from './slot-management/slot-management.component';
+import { AppointmentsComponent } from './appointments/appointments.component';
 import { DoctorRoutingModule } from './doctor-routing.module';
 
 import { FormsModule } from '@angular/forms';
@@ -26,12 +27,18 @@ import { SplitButtonModule } from 'primeng/splitbutton';
 import { CalendarModule } from 'primeng/calendar';
 import { TooltipModule } from 'primeng/tooltip';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { DropdownModule } from 'primeng/dropdown';
+
 
 @NgModule({
   declarations: [
     DashboardComponent,
     DoctorProfileComponent,
+    SlotManagementComponent,
+    AppointmentsComponent
+
     SlotManagementComponent
+
   ],
   imports: [
     CommonModule,
@@ -57,6 +64,9 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
     CalendarModule,
     ToastModule,
     TooltipModule,
+    ConfirmDialogModule,
+    DropdownModule
+
     ConfirmDialogModule
   ],
   providers: [MessageService]

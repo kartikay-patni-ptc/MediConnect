@@ -67,6 +67,8 @@ export class DashboardComponent implements OnInit {
     { id: 'appointments', label: 'Appointments', icon: 'pi pi-calendar' },
     { id: 'prescriptions', label: 'My Prescriptions', icon: 'pi pi-list' },
     { id: 'write-prescription', label: 'Write Prescription', icon: 'pi pi-pencil' },
+    { id: 'manage-slots', label: 'Manage Slots', icon: 'pi pi-clock' },
+    { id: 'ai-chat', label: 'AI Consult', icon: 'pi pi-comments' },
     { id: 'messages', label: 'Messages', icon: 'pi pi-envelope' },
     { id: 'settings', label: 'Settings', icon: 'pi pi-cog' }
   ];
@@ -439,20 +441,48 @@ export class DashboardComponent implements OnInit {
 
   onNavClick(itemId: string): void {
     switch (itemId) {
+      case 'dashboard':
+        // Already on dashboard - refresh
+        this.loadDoctorData();
+        break;
+      case 'patients':
+        // Navigate to patient records or show patient list
+        this.messageService.add({ 
+          severity: 'info', 
+          summary: 'Patient Records', 
+          detail: 'Patient records functionality coming soon' 
+        });
+        break;
+      case 'appointments':
+        // Navigate to appointments view
+        this.router.navigate(['/doctor/appointments']);
+        break;
       case 'prescriptions':
         this.router.navigate(['/prescription/list']);
         break;
       case 'write-prescription':
-        // For now, show info about writing prescription from appointment
+        // Navigate to prescription writer
+        this.router.navigate(['/prescription/write']);
+        break;
+      case 'manage-slots':
+        // Navigate to slot management
+        this.router.navigate(['/doctor/slots']);
+        break;
+      case 'ai-chat':
+        // Navigate to AI chat consultation
+        this.router.navigate(['/chat']);
+        break;
+      case 'messages':
+        // Navigate to messages or show info
         this.messageService.add({ 
           severity: 'info', 
-          summary: 'Write Prescription', 
-          detail: 'Select an appointment to write a prescription for the patient' 
+          summary: 'Messages', 
+          detail: 'Messaging system coming soon' 
         });
         break;
-      case 'dashboard':
-        // Already on dashboard - refresh
-        this.loadDoctorData();
+      case 'settings':
+        // Navigate to doctor profile settings
+        this.router.navigate(['/doctor/profile']);
         break;
       default:
         this.messageService.add({ severity: 'info', summary: 'Navigation', detail: `${itemId} clicked` });

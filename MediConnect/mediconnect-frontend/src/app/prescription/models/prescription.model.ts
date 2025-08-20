@@ -225,7 +225,7 @@ export enum PaymentStatus {
 
 // Helper interfaces for API requests
 export interface CreatePrescriptionRequest {
-  appointmentId: number;
+  appointmentId?: number;
   diagnosis: string;
   symptoms: string;
   doctorNotes: string;
