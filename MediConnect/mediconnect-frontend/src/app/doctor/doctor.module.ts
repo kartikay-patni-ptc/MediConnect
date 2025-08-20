@@ -29,12 +29,16 @@ import { TooltipModule } from 'primeng/tooltip';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { DropdownModule } from 'primeng/dropdown';
 
+
 @NgModule({
   declarations: [
     DashboardComponent,
     DoctorProfileComponent,
     SlotManagementComponent,
     AppointmentsComponent
+
+    SlotManagementComponent
+
   ],
   imports: [
     CommonModule,
@@ -62,6 +66,8 @@ import { DropdownModule } from 'primeng/dropdown';
     TooltipModule,
     ConfirmDialogModule,
     DropdownModule
+
+    ConfirmDialogModule
   ],
   providers: [MessageService]
 })
