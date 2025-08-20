@@ -19,7 +19,9 @@ public class DoctorSlotService {
     private DoctorRepository doctorRepository;
 
     public DoctorSlot createSlot(Long doctorId, LocalDateTime startTime, LocalDateTime endTime) {
+        //Optional<Doctor> doctorOpt = doctorRepository.findById(doctorId);
         Optional<Doctor> doctorOpt = doctorRepository.findById(doctorId);
+
         if (doctorOpt.isEmpty()) {
             throw new IllegalArgumentException("Invalid doctor");
         }
@@ -40,6 +42,11 @@ public class DoctorSlotService {
                 .orElseThrow(() -> new IllegalArgumentException("Slot not found"));
         slot.setAvailable(available);
         return doctorSlotRepository.save(slot);
+    }
+    public void deleteSlot(Long slotId) {
+        DoctorSlot slot = doctorSlotRepository.findById(slotId)
+                .orElseThrow(() -> new IllegalArgumentException("Slot not found"));
+        doctorSlotRepository.delete(slot);
     }
 }
 

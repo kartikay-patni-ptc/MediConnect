@@ -150,12 +150,12 @@ public class DoctorService {
 
         // Handle multiple specializations separated by commas or other delimiters
         String[] searchTerms = searchTerm.split("[,;|&+]");
-        
+
         for (String term : searchTerms) {
             String cleanTerm = term.trim();
             if (!cleanTerm.isEmpty()) {
                 System.out.println("Searching for specialization: " + cleanTerm);
-                
+
                 // Search by specialization
                 List<Doctor> specializationResults = repository.findBySpecializationContainingIgnoreCase(cleanTerm);
                 System.out.println("Found " + specializationResults.size() + " doctors by specialization '" + cleanTerm + "'");

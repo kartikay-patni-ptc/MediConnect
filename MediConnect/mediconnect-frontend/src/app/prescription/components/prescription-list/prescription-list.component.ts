@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { PrescriptionService } from '../../services/prescription.service';
 import { Prescription, PrescriptionStatus } from '../../models/prescription.model';
+import { AuthService } from '../../../auth/auth.service';
 
 @Component({
   selector: 'app-prescription-list',
@@ -36,7 +37,8 @@ export class PrescriptionListComponent implements OnInit {
   constructor(
     private router: Router,
     private prescriptionService: PrescriptionService,
-    private messageService: MessageService
+    private messageService: MessageService,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
@@ -45,10 +47,22 @@ export class PrescriptionListComponent implements OnInit {
   }
 
   private loadUserInfo(): void {
-    // Get user info from localStorage or auth service
-    const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
-    this.userRole = userInfo.role || 'PATIENT';
-    this.userId = userInfo.id || 0;
+    // Get user info from auth service instead of localStorage
+    const currentUser = this.authService.getCurrentUser();
+    this.userRole = currentUser.role || 'PATIENT';
+    this.userId = currentUser.userId || 0;
+    
+    // Validate user ID
+    if (this.userId === 0) {
+      console.error('Invalid user ID:', this.userId);
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Authentication Error',
+        detail: 'User not properly authenticated. Please login again.'
+      });
+      this.router.navigate(['/login']);
+      return;
+    }
   }
 
   loadPrescriptions(): void {
