@@ -12,7 +12,7 @@ import { DoctorProfileComponent } from './profile/doctor-profile.component';
 import { SlotManagementComponent } from './slot-management/slot-management.component';
 import { AppointmentsComponent } from './appointments/appointments.component';
 import { DoctorRoutingModule } from './doctor-routing.module';
-import { PatientSelectionDialogComponent } from '../prescription/components/patient-selection-dialog/patient-selection-dialog.component';
+import { PrescriptionModule } from '../prescription/prescription.module';
 
 import { FormsModule } from '@angular/forms';
 import { TableModule } from 'primeng/table';
@@ -32,17 +32,12 @@ import { DropdownModule } from 'primeng/dropdown';
 import { BadgeModule } from 'primeng/badge';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 
-
 @NgModule({
   declarations: [
     DashboardComponent,
     DoctorProfileComponent,
     SlotManagementComponent,
-    AppointmentsComponent,
-    PatientSelectionDialogComponent
-    SlotManagementComponent
-
-
+    AppointmentsComponent
   ],
   imports: [
     CommonModule,
@@ -52,10 +47,8 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
     InputTextareaModule,
     ToastModule,
     DoctorRoutingModule,
-    CommonModule,
     FormsModule,
     TableModule,
-    ButtonModule,
     ToolbarModule,
     BreadcrumbModule,
     SidebarModule,
@@ -66,13 +59,12 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
     FileUploadModule,
     SplitButtonModule,
     CalendarModule,
-    ToastModule,
     TooltipModule,
     ConfirmDialogModule,
     DropdownModule,
     BadgeModule,
-    ProgressSpinnerModule
-
+    ProgressSpinnerModule,
+    PrescriptionModule
   ],
   providers: [MessageService]
 })
