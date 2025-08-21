@@ -32,6 +32,7 @@ import { DropdownModule } from 'primeng/dropdown';
 import { BadgeModule } from 'primeng/badge';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 
+
 @NgModule({
   declarations: [
     DashboardComponent,
@@ -39,6 +40,9 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
     SlotManagementComponent,
     AppointmentsComponent,
     PatientSelectionDialogComponent
+    SlotManagementComponent
+
+
   ],
   imports: [
     CommonModule,
@@ -68,6 +72,7 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
     DropdownModule,
     BadgeModule,
     ProgressSpinnerModule
+
   ],
   providers: [MessageService]
 })
