@@ -5,16 +5,12 @@ import { DoctorProfileComponent } from './profile/doctor-profile.component';
 import { SlotManagementComponent } from './slot-management/slot-management.component';
 import { AppointmentsComponent } from './appointments/appointments.component';
 
-
 const routes: Routes = [
   { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
   { path: 'dashboard', component: DashboardComponent },
   { path: 'profile', component: DoctorProfileComponent },
-
   { path: 'slots', component: SlotManagementComponent },
-  { path: 'appointments', component: AppointmentsComponent },
-  { path: 'slots', component: SlotManagementComponent }
-
+  { path: 'appointments', component: AppointmentsComponent }
 ];
 
 @NgModule({

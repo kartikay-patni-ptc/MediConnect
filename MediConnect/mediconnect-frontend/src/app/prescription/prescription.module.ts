@@ -30,6 +30,7 @@ import { PrescriptionListComponent } from './components/prescription-list/prescr
 import { PrescriptionViewerComponent } from './components/prescription-viewer/prescription-viewer.component';
 import { MedicineOrderComponent } from './components/medicine-order/medicine-order.component';
 import { OrderTrackingComponent } from './components/order-tracking/order-tracking.component';
+import { PatientSelectionDialogComponent } from './components/patient-selection-dialog/patient-selection-dialog.component';
 
 
 const routes = [
@@ -48,7 +49,8 @@ const routes = [
     PrescriptionListComponent,
     PrescriptionViewerComponent,
     MedicineOrderComponent,
-    OrderTrackingComponent
+    OrderTrackingComponent,
+    PatientSelectionDialogComponent
   ],
   imports: [
     CommonModule,
@@ -82,7 +84,8 @@ const routes = [
     PrescriptionListComponent,
     PrescriptionViewerComponent,
     MedicineOrderComponent,
-    OrderTrackingComponent
+    OrderTrackingComponent,
+    PatientSelectionDialogComponent
   ]
 })
 export class PrescriptionModule { }

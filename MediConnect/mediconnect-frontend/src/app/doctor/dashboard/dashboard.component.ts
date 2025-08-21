@@ -610,12 +610,12 @@ export class DashboardComponent implements OnInit {
     this.showPatientSelectionDialog = false;
   }
 
-  onPatientSelectedForPrescription(patientData: { appointmentId: string; patientName: string; patientId: number }): void {
-    this.selectedPatientForPrescription = patientData;
+  onPatientSelectedForPrescription(appointment: Appointment): void {
+    this.selectedPatientForPrescription = appointment;
     this.showPatientSelectionDialog = false;
     
     // Navigate to prescription writer with the selected appointment
-    this.router.navigate(['/prescription/write', patientData.appointmentId]);
+    this.router.navigate(['/prescription/write', appointment.id]);
   }
 
   goToHome(): void {
