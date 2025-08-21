@@ -72,13 +72,22 @@ export class OrderTrackingComponent implements OnInit {
     });
   }
 
-  getStatusSeverity(status: string): string {
-    switch (status) {
-      case 'DELIVERED': return 'success';
-      case 'CANCELLED': case 'REJECTED': return 'danger';
-      case 'PENDING': return 'warning';
-      case 'OUT_FOR_DELIVERY': case 'PREPARING': return 'info';
-      default: return 'secondary';
-    }
+  
+getStatusSeverity(status: string): 'success' | 'info' | 'warning' | 'danger' {
+  switch (status.toLowerCase()) {
+    case 'delivered':
+    case 'completed':
+      return 'success';
+    case 'pending':
+      return 'warning';
+    case 'cancelled':
+    case 'failed':
+      return 'danger';
+    default:
+      return 'info';
   }
 }
+
+
+}
+

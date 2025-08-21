@@ -156,9 +156,20 @@ export class PrescriptionListComponent implements OnInit {
     }
   }
 
-  getStatusSeverity(status: PrescriptionStatus): string {
-    return this.prescriptionService.getStatusSeverity(status);
+getStatusSeverity(status: string): 'success' | 'info' | 'warning' | 'danger' {
+  switch (status.toLowerCase()) {
+    case 'delivered':
+    case 'completed':
+      return 'success';
+    case 'pending':
+      return 'warning';
+    case 'cancelled':
+    case 'failed':
+      return 'danger';
+    default:
+      return 'info';
   }
+}
 
   getStatusIcon(status: PrescriptionStatus): string {
     return this.prescriptionService.getStatusIcon(status);
