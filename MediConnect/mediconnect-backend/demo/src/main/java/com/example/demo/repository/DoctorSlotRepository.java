@@ -6,5 +6,6 @@ import java.util.List;
 
 public interface DoctorSlotRepository extends JpaRepository<DoctorSlot, Long> {
     List<DoctorSlot> findByDoctorId(Long doctorId);
+    List<DoctorSlot> findByAvailableTrue();
 }
 

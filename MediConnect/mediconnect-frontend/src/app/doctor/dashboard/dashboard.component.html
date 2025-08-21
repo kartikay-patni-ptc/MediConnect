@@ -35,6 +35,13 @@
     </nav>
   </p-sidebar>
 
+  <!-- Patient Selection Dialog -->
+  <app-patient-selection-dialog
+    *ngIf="showPatientSelectionDialog"
+    (patientSelected)="onPatientSelectedForPrescription($event)"
+    (dialogClosed)="onPatientDialogClosed()">
+  </app-patient-selection-dialog>
+
   <!-- Main Content -->
   <main class="flex-1 min-w-0">
     <!-- Top Toolbar -->

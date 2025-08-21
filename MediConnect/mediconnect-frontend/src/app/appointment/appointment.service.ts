@@ -51,4 +51,11 @@ getDoctorByUserId(userId: number): Observable<Doctor> {
   return this.http.get<Doctor>(`http://localhost:8080/api/doctor/by-user/${userId}`);
 }
 
+  updateAppointmentStatus(appointmentId: number, status: string): Observable<Appointment> {
+    return this.http.put<Appointment>(`${this.API_URL}/${appointmentId}/status`, { status });
+  }
+
+  getAppointmentById(appointmentId: number): Observable<Appointment> {
+    return this.http.get<Appointment>(`${this.API_URL}/${appointmentId}`);
+  }
 }

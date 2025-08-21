@@ -1,0 +1,38 @@
+.patient-selection-dialog {
+  /* Component-specific styles if needed */
+}
+
+/* Custom scrollbar for the appointments list */
+.overflow-y-auto::-webkit-scrollbar {
+  width: 6px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Hover effects for appointment cards */
+.appointment-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .patient-selection-dialog ::ng-deep .p-dialog {
+    width: 95vw !important;
+    margin: 1rem;
+  }
+}
+
+

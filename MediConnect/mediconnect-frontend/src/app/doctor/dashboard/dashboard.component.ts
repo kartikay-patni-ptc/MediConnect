@@ -4,13 +4,14 @@ import { ViewChild } from '@angular/core';
 import { Table } from 'primeng/table';
 import { Router } from '@angular/router';
 import { AuthService } from '../../auth/auth.service';
+import { AppointmentService } from '../../appointment/appointment.service';
 
 interface Appointment {
   id: string;
   patientName: string;
   time: string;
   type: 'Consultation' | 'Follow-up' | 'Surgery' | 'Diagnostic';
-  status: 'Upcoming' | 'In Progress' | 'Completed' | 'Cancelled';
+  status: 'Upcoming' | 'Confirmed' | 'Completed' | 'Cancelled';
   notes?: string;
   aiSummary?: { // This will now hold patientAdvice
     answer: string;
@@ -60,6 +61,10 @@ export class DashboardComponent implements OnInit {
 
   showUploadDialog = false;
   uploadedFiles: File[] = [];
+
+  // Patient selection dialog properties
+  showPatientSelectionDialog = false;
+  selectedPatientForPrescription: any = null;
 
   navItems: NavItem[] = [
     { id: 'dashboard', label: 'Dashboard', icon: 'pi pi-home' },
@@ -193,7 +198,8 @@ export class DashboardComponent implements OnInit {
   constructor(
     private messageService: MessageService, 
     private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
+    private appointmentService: AppointmentService
   ) {}
 
   ngOnInit(): void {
@@ -347,28 +353,67 @@ export class DashboardComponent implements OnInit {
   }
 
   completeAppointment(appointmentId: string): void {
-    // Update appointment status to completed
+    // Find the appointment in the list
     const appointment = this.upcomingAppointments.find(apt => apt.id === appointmentId);
     if (appointment) {
+      // Update local state immediately for better UX
       appointment.status = 'Completed';
       this.completedAppointments++;
-      this.messageService.add({
-        severity: 'success',
-        summary: 'Appointment Completed',
-        detail: `Appointment ${appointmentId} has been marked as completed`
+      
+      // Save to backend
+      this.appointmentService.updateAppointmentStatus(Number(appointmentId), 'Completed').subscribe({
+        next: (updatedAppointment) => {
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Appointment Completed',
+            detail: `Appointment ${appointmentId} has been marked as completed and saved`
+          });
+          // Update the appointment with the response from backend
+          Object.assign(appointment, updatedAppointment);
+        },
+        error: (error) => {
+          // Revert local state if backend update fails
+          appointment.status = 'Upcoming';
+          this.completedAppointments--;
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Update Failed',
+            detail: 'Failed to save appointment status. Please try again.'
+          });
+          console.error('Error updating appointment status:', error);
+        }
       });
     }
   }
 
   cancelAppointment(appointmentId: string): void {
-    // Update appointment status to cancelled
+    // Find the appointment in the list
     const appointment = this.upcomingAppointments.find(apt => apt.id === appointmentId);
     if (appointment) {
+      // Update local state immediately for better UX
       appointment.status = 'Cancelled';
-      this.messageService.add({
-        severity: 'warn',
-        summary: 'Appointment Cancelled',
-        detail: `Appointment ${appointmentId} has been cancelled`
+      
+      // Save to backend
+      this.appointmentService.updateAppointmentStatus(Number(appointmentId), 'Cancelled').subscribe({
+        next: (updatedAppointment) => {
+          this.messageService.add({
+            severity: 'warn',
+            summary: 'Appointment Cancelled',
+            detail: `Appointment ${appointmentId} has been cancelled and saved`
+          });
+          // Update the appointment with the response from backend
+          Object.assign(appointment, updatedAppointment);
+        },
+        error: (error) => {
+          // Revert local state if backend update fails
+          appointment.status = 'Upcoming';
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Update Failed',
+            detail: 'Failed to save appointment cancellation. Please try again.'
+          });
+          console.error('Error cancelling appointment:', error);
+        }
       });
     }
   }
@@ -376,11 +421,30 @@ export class DashboardComponent implements OnInit {
   startConsultation(appointmentId: string): void {
     const appointment = this.upcomingAppointments.find(apt => apt.id === appointmentId);
     if (appointment) {
-      appointment.status = 'In Progress';
-      this.messageService.add({
-        severity: 'info',
-        summary: 'Consultation Started',
-        detail: `Consultation for ${appointment.patientName} has begun`
+      // Update local state immediately for better UX
+      appointment.status = 'Confirmed';
+      
+      // Save to backend
+      this.appointmentService.updateAppointmentStatus(Number(appointmentId), 'Confirmed').subscribe({
+        next: (updatedAppointment) => {
+          this.messageService.add({
+            severity: 'info',
+            summary: 'Consultation Started',
+            detail: `Consultation for ${appointment.patientName} has begun and saved`
+          });
+          // Update the appointment with the response from backend
+          Object.assign(appointment, updatedAppointment);
+        },
+        error: (error) => {
+          // Revert local state if backend update fails
+          appointment.status = 'Upcoming';
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Update Failed',
+            detail: 'Failed to start consultation. Please try again.'
+          });
+          console.error('Error starting consultation:', error);
+        }
       });
     }
   }
@@ -461,8 +525,8 @@ export class DashboardComponent implements OnInit {
         this.router.navigate(['/prescription/list']);
         break;
       case 'write-prescription':
-        // Navigate to prescription writer
-        this.router.navigate(['/prescription/write']);
+        // Show patient selection dialog first
+        this.showPatientSelectionDialog = true;
         break;
       case 'manage-slots':
         // Navigate to slot management
@@ -533,13 +597,25 @@ export class DashboardComponent implements OnInit {
     switch (status) {
       case 'Completed':
         return 'success';
-      case 'In Progress':
+      case 'Confirmed':
         return 'warning';
       case 'Cancelled':
         return 'danger';
       default:
         return 'info';
     }
+  }
+
+  onPatientDialogClosed(): void {
+    this.showPatientSelectionDialog = false;
+  }
+
+  onPatientSelectedForPrescription(patientData: { appointmentId: string; patientName: string; patientId: number }): void {
+    this.selectedPatientForPrescription = patientData;
+    this.showPatientSelectionDialog = false;
+    
+    // Navigate to prescription writer with the selected appointment
+    this.router.navigate(['/prescription/write', patientData.appointmentId]);
   }
 
   goToHome(): void {

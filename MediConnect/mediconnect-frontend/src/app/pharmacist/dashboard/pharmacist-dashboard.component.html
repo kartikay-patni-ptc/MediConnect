@@ -1,287 +1,224 @@
-<div class="dashboard-container">
-  <!-- Sidebar -->
-  <aside class="sidebar">
-    <div class="sidebar-header">
-      <h3><i class="fas fa-clinic-medical"></i> MediConnect</h3>
-      <p class="user-info">{{ currentUser?.username }}</p>
-    </div>
-    <nav class="sidebar-nav">
-      <button class="nav-item active" routerLink="/pharmacist/dashboard">
-        <i class="fas fa-home"></i>
-        <span>Dashboard</span>
-      </button>
-      <button class="nav-item" routerLink="/pharmacist/profile">
-        <i class="fas fa-user-md"></i>
-        <span>Profile</span>
-      </button>
-      <button class="nav-item" routerLink="/prescription/list">
-        <i class="fas fa-list"></i>
-        <span>Orders</span>
-      </button>
-      <button class="nav-item" routerLink="/chat">
-        <i class="fas fa-comments"></i>
-        <span>AI Consult</span>
-      </button>
-      <button class="nav-item" (click)="logout()">
-        <i class="fas fa-sign-out-alt"></i>
-        <span>Logout</span>
-      </button>
-    </nav>
-  </aside>
+<div class="pharmacist-dashboard">
+  <p-toast></p-toast>
 
-  <!-- Main Content -->
-  <div class="main-content">
-    <!-- Header -->
-    <header class="dashboard-header">
-      <div class="header-content">
-        <div class="header-left">
-          <h1><i class="fas fa-clinic-medical"></i> MediConnect Pharmacy</h1>
-          <p>Welcome back, {{ currentUser?.username }}</p>
-        </div>
-        <div class="header-right">
-          <button class="btn btn-outline" (click)="logout()">
-            <i class="fas fa-sign-out-alt"></i> Logout
-          </button>
-        </div>
+  <!-- Header -->
+  <div class="bg-white rounded-lg shadow-sm mb-6 p-6">
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-3xl font-bold text-gray-800 mb-2">
+          <i class="pi pi-user-md text-primary mr-3"></i>
+          Pharmacist Dashboard
+        </h1>
+        <p class="text-gray-600">Welcome back! Manage your pharmacy operations</p>
       </div>
-    </header>
-
-    <!-- Loading State -->
-    <div class="loading-container" *ngIf="loading">
-      <div class="loading-spinner">
-        <i class="fas fa-spinner fa-spin"></i>
-        <p>Loading your dashboard...</p>
+      <div class="flex gap-3">
+        <p-button 
+          label="Refresh" 
+          icon="pi pi-refresh"
+          severity="secondary"
+          [outlined]="true"
+          (onClick)="refreshData()">
+        </p-button>
+        <p-button 
+          label="Home" 
+          icon="pi pi-home"
+          severity="secondary"
+          [outlined]="true"
+          (onClick)="goToHome()">
+        </p-button>
+        <p-button 
+          label="Logout" 
+          icon="pi pi-sign-out"
+          severity="danger"
+          [outlined]="true"
+          (onClick)="logout()">
+        </p-button>
       </div>
     </div>
+  </div>
 
-    <!-- No Profile State -->
-    <div class="no-profile-container" *ngIf="!loading && !hasProfile">
-      <div class="no-profile-card">
-        <div class="no-profile-icon">
-          <i class="fas fa-store"></i>
+  <div *ngIf="loading" class="text-center py-8">
+    <p-progressSpinner></p-progressSpinner>
+    <p class="mt-4 text-gray-600">Loading dashboard...</p>
+  </div>
+
+  <div *ngIf="!loading && !hasProfile" class="text-center py-8">
+    <i class="pi pi-exclamation-triangle text-6xl text-yellow-500 mb-4"></i>
+    <h3 class="text-xl font-semibold text-gray-700 mb-2">Profile Not Found</h3>
+    <p class="text-gray-600 mb-6">You need to create your pharmacy profile first.</p>
+    <p-button 
+      label="Create Profile" 
+      icon="pi pi-plus"
+      routerLink="/pharmacist/profile">
+    </p-button>
+  </div>
+
+  <div *ngIf="!loading && hasProfile" class="space-y-6">
+    <!-- Order Statistics -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6">
+      <p-card styleClass="shadow-sm">
+        <div class="text-center">
+          <div class="text-2xl font-bold text-blue-600">{{ orderStats.totalOrders }}</div>
+          <div class="text-sm text-gray-600">Total Orders</div>
         </div>
-        <h2>Complete Your Pharmacy Profile</h2>
-        <p>To get started with MediConnect, please complete your pharmacy store profile.</p>
-        <button class="btn btn-primary" routerLink="/pharmacist/profile">
-          <i class="fas fa-plus"></i> Create Profile
-        </button>
+      </p-card>
+      
+      <p-card styleClass="shadow-sm">
+        <div class="text-center">
+          <div class="text-2xl font-bold text-orange-600">{{ orderStats.pendingOrders }}</div>
+          <div class="text-sm text-gray-600">Pending</div>
+        </div>
+      </p-card>
+      
+      <p-card styleClass="shadow-sm">
+        <div class="text-center">
+          <div class="text-2xl font-bold text-yellow-600">{{ orderStats.acceptedOrders }}</div>
+          <div class="text-sm text-gray-600">Accepted</div>
+        </div>
+      </p-card>
+      
+      <p-card styleClass="shadow-sm">
+        <div class="text-center">
+          <div class="text-2xl font-bold text-purple-600">{{ orderStats.preparingOrders }}</div>
+          <div class="text-sm text-gray-600">Preparing</div>
+        </div>
+      </p-card>
+      
+      <p-card styleClass="shadow-sm">
+        <div class="text-center">
+          <div class="text-2xl font-bold text-green-600">{{ orderStats.readyOrders }}</div>
+          <div class="text-sm text-gray-600">Ready</div>
+        </div>
+      </p-card>
+      
+      <p-card styleClass="shadow-sm">
+        <div class="text-center">
+          <div class="text-2xl font-bold text-teal-600">{{ orderStats.deliveredOrders }}</div>
+          <div class="text-sm text-gray-600">Delivered</div>
+        </div>
+      </p-card>
+    </div>
+
+    <!-- Profile Summary -->
+    <div class="bg-white rounded-lg shadow-sm p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xl font-semibold text-gray-800">Pharmacy Profile</h2>
+        <p-button 
+          label="Edit Profile" 
+          icon="pi pi-pencil"
+          severity="secondary"
+          [outlined]="true"
+          (onClick)="navigateToProfile()">
+        </p-button>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <p class="text-sm font-medium text-gray-700">Pharmacy Name</p>
+          <p class="text-lg text-gray-900">{{ pharmacyProfile?.name }}</p>
+        </div>
+        <div>
+          <p class="text-sm font-medium text-gray-700">Owner</p>
+          <p class="text-lg text-gray-900">{{ pharmacyProfile?.ownerName }}</p>
+        </div>
+        <div>
+          <p class="text-sm font-medium text-gray-700">License Number</p>
+          <p class="text-lg text-gray-900">{{ pharmacyProfile?.licenseNumber }}</p>
+        </div>
+        <div>
+          <p class="text-sm font-medium text-gray-700">Phone</p>
+          <p class="text-lg text-gray-900">{{ pharmacyProfile?.phoneNumber }}</p>
+        </div>
+        <div class="md:col-span-2">
+          <p class="text-sm font-medium text-gray-700">Address</p>
+          <p class="text-lg text-gray-900">{{ pharmacyProfile?.address }}</p>
+        </div>
       </div>
     </div>
 
-    <!-- Dashboard Content -->
-    <div class="dashboard-content" *ngIf="!loading && hasProfile">
-      <!-- Stats Cards -->
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-icon">
-            <i class="fas fa-shopping-cart"></i>
-          </div>
-          <div class="stat-content">
-            <h3>{{ dashboardData?.totalOrders || 0 }}</h3>
-            <p>Total Orders</p>
-          </div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-icon">
-            <i class="fas fa-clock"></i>
-          </div>
-          <div class="stat-content">
-            <h3>{{ dashboardData?.pendingOrders || 0 }}</h3>
-            <p>Pending Orders</p>
-          </div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-icon">
-            <i class="fas fa-store"></i>
-          </div>
-          <div class="stat-content">
-            <h3>{{ pharmacyProfile?.name }}</h3>
-            <p>Your Store</p>
-          </div>
-        </div>
-
-        <div class="stat-card">
-          <div class="stat-icon">
-            <i class="fas fa-user-md"></i>
-          </div>
-          <div class="stat-content">
-            <h3>{{ pharmacyProfile?.ownerName }}</h3>
-            <p>Owner</p>
-          </div>
-        </div>
+    <!-- Recent Orders -->
+    <div class="bg-white rounded-lg shadow-sm p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xl font-semibold text-gray-800">Recent Orders</h2>
+        <p-button 
+          label="View All Orders" 
+          icon="pi pi-arrow-right"
+          severity="primary"
+          (onClick)="navigateToOrders()">
+        </p-button>
+      </div>
+      
+      <div *ngIf="loadingOrders" class="text-center py-4">
+        <p-progressSpinner></p-progressSpinner>
+        <p class="mt-2 text-gray-600">Loading recent orders...</p>
       </div>
 
-      <!-- Main Content Grid -->
-      <div class="content-grid">
-        <!-- Pharmacy Profile -->
-        <div class="profile-card">
-          <div class="card-header">
-            <h3><i class="fas fa-user-md"></i> Pharmacy Profile</h3>
-            <button class="btn btn-sm btn-outline">
-              <i class="fas fa-edit"></i> Edit
-            </button>
-          </div>
-          <div class="profile-info">
-            <div class="info-row">
-              <span class="label">Store Name:</span>
-              <span class="value">{{ pharmacyProfile?.name }}</span>
-            </div>
-            <div class="info-row">
-              <span class="label">Owner:</span>
-              <span class="value">{{ pharmacyProfile?.ownerName }}</span>
-            </div>
-            <div class="info-row">
-              <span class="label">License:</span>
-              <span class="value">{{ pharmacyProfile?.licenseNumber }}</span>
-            </div>
-            <div class="info-row">
-              <span class="label">Phone:</span>
-              <span class="value">{{ pharmacyProfile?.phoneNumber }}</span>
-            </div>
-            <div class="info-row">
-              <span class="label">Email:</span>
-              <span class="value">{{ pharmacyProfile?.email }}</span>
-            </div>
-            <div class="info-row">
-              <span class="label">Address:</span>
-              <span class="value">{{ pharmacyProfile?.address }}</span>
-            </div>
-            <div class="info-row">
-              <span class="label">Description:</span>
-              <span class="value">{{ pharmacyProfile?.description }}</span>
-            </div>
-          </div>
-        </div>
+      <div *ngIf="!loadingOrders && recentOrders.length === 0" class="text-center py-8">
+        <i class="pi pi-inbox text-4xl text-gray-300 mb-2"></i>
+        <p class="text-gray-600">No orders yet</p>
+      </div>
 
-        <!-- Orders Section -->
-        <div class="orders-card">
-          <div class="card-header">
-            <h3><i class="fas fa-list-alt"></i> Recent Orders</h3>
-            <button class="btn btn-sm btn-outline">
-              <i class="fas fa-eye"></i> View All
-            </button>
-          </div>
-          <div class="orders-content">
-            <div class="no-orders" *ngIf="!dashboardData?.orders?.length">
-              <div class="no-orders-icon">
-                <i class="fas fa-inbox"></i>
+      <div *ngIf="!loadingOrders && recentOrders.length > 0" class="space-y-3">
+        <div *ngFor="let order of recentOrders" 
+             class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors cursor-pointer"
+             (click)="viewOrderDetails(order)">
+          <div class="flex items-center justify-between">
+            <div class="flex-1">
+              <div class="flex items-center gap-3 mb-2">
+                <h3 class="text-lg font-semibold text-gray-900">{{ order.orderNumber }}</h3>
+                <span 
+                  [class]="'text-xs font-medium px-2 py-1 rounded-full ' + getStatusSeverityClass(order.status)">
+                  {{ getStatusLabel(order.status) }}
+                </span>
               </div>
-              <h4>No Orders Yet</h4>
-              <p>When customers place orders, they will appear here.</p>
+              <div class="flex items-center gap-4 text-sm text-gray-600">
+                <span class="flex items-center gap-1">
+                  <i class="pi pi-user"></i>
+                  {{ order.patientName }}
+                </span>
+                <span class="flex items-center gap-1">
+                  <i class="pi pi-map-marker"></i>
+                  {{ order.deliveryPincode }}
+                </span>
+                <span class="flex items-center gap-1">
+                  <i class="pi pi-money-bill"></i>
+                  ₹{{ order.finalAmount }}
+                </span>
+              </div>
             </div>
-            <div class="orders-list" *ngIf="dashboardData?.orders?.length">
-              <!-- Order items would go here -->
+            <div class="text-right">
+              <p class="text-sm text-gray-500">{{ order.createdAt | date:'short' }}</p>
+              <i class="pi pi-chevron-right text-gray-400"></i>
             </div>
           </div>
         </div>
       </div>
+    </div>
 
-      <!-- Quick Actions -->
-      <div class="quick-actions">
-        <h3>Quick Actions</h3>
-        <div class="actions-grid">
-          <button class="action-btn">
-            <i class="fas fa-plus"></i>
-            <span>Add Medicine</span>
-          </button>
-          <button class="action-btn">
-            <i class="fas fa-chart-line"></i>
-            <span>View Analytics</span>
-          </button>
-          <button class="action-btn">
-            <i class="fas fa-cog"></i>
-            <span>Settings</span>
-          </button>
-          <button class="action-btn">
-            <i class="fas fa-question-circle"></i>
-            <span>Help</span>
-          </button>
-        </div>
+    <!-- Quick Actions -->
+    <div class="bg-white rounded-lg shadow-sm p-6">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">Quick Actions</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <p-button 
+          label="Manage Orders" 
+          icon="pi pi-shopping-cart"
+          class="w-full"
+          (onClick)="navigateToOrders()">
+        </p-button>
+        <p-button 
+          label="Manage Inventory" 
+          icon="pi pi-box"
+          class="w-full"
+          severity="secondary"
+          [outlined]="true">
+        </p-button>
+        <p-button 
+          label="View Reports" 
+          icon="pi pi-chart-bar"
+          class="w-full"
+          severity="secondary"
+          [outlined]="true">
+        </p-button>
       </div>
     </div>
   </div>
 </div>
-
-<style>
-.dashboard-container {
-  padding: 2rem;
-  display: flex;
-}
-
-.sidebar {
-  width: 250px;
-  background-color: #f8f9fa;
-  padding: 2rem;
-  height: 100%;
-  position: fixed;
-  left: 0;
-  top: 0;
-  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
-}
-
-.sidebar-header h3 {
-  margin-bottom: 0.5rem;
-}
-
-.sidebar-nav .nav-item {
-  display: flex;
-  align-items: center;
-  gap: 0.8rem;
-  padding: 0.8rem 1rem;
-  margin-bottom: 0.5rem;
-  border-radius: 8px;
-  text-align: left;
-  width: 100%;
-  background-color: #e9ecef;
-  border: 1px solid #dee2e6;
-  color: #343a40;
-  font-weight: 500;
-  transition: background-color 0.2s ease;
-}
-
-.sidebar-nav .nav-item:hover {
-  background-color: #dee2e6;
-}
-
-.sidebar-nav .nav-item.active {
-  background-color: #007bff;
-  color: white;
-  border-color: #007bff;
-}
-
-.sidebar-nav .nav-item i {
-  font-size: 1.1rem;
-}
-
-.main-content {
-  flex-grow: 1;
-  margin-left: 250px; /* Adjust based on sidebar width */
-  padding: 2rem;
-}
-
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-  padding-bottom: 1rem;
-  border-bottom: 1px solid #e0e0e0;
-}
-
-.user-info {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.content {
-  display: grid;
-  gap: 1rem;
-}
-
-.dashboard-card {
-  margin-bottom: 1rem;
-}
-</style>
