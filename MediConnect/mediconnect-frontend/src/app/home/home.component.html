@@ -1,120 +1,133 @@
-<div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-  <!-- Navigation Header -->
-  <header class="bg-white shadow-sm border-b border-gray-200">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex justify-between items-center h-16">
-        <div class="flex items-center">
-          <h1 class="text-2xl font-bold text-indigo-600">MediConnect</h1>
+<div class="home-container">
+  <!-- Sticky Navigation -->
+  <header class="nav" [class.scrolled]="scrolled">
+    <div class="nav-inner">
+      <div class="brand">MediConnect</div>
+      <nav class="nav-links">
+        <button class="nav-link" (click)="scrollTo('home')">Home</button>
+        <button class="nav-link" (click)="scrollTo('about')">About</button>
+        <button class="nav-link" (click)="scrollTo('services')">Services</button>
+        <button class="nav-link" (click)="scrollTo('contact')">Contact</button>
+        <div class="auth-ctas" *ngIf="!isLoggedIn; else loggedInNav">
+          <button pButton type="button" label="Login" class="p-button-outlined p-button-sm mr-2" (click)="goToLogin()"></button>
+          <button pButton type="button" label="Register" class="p-button-sm" (click)="goToRegister()"></button>
         </div>
-        
-        <nav class="flex items-center space-x-4">
-          <a href="#" class="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium">Home</a>
-          <a href="#" class="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium">About</a>
-          <a href="#" class="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium">Services</a>
-          <a href="#" class="text-gray-700 hover:text-indigo-600 px-3 py-2 rounded-md text-sm font-medium">Contact</a>
-          
-          <div class="ml-4" *ngIf="!isLoggedIn; else loggedInNav">
-            <button pButton type="button" label="Login" class="p-button-outlined p-button-sm mr-2" (click)="goToLogin()"></button>
-            <button pButton type="button" label="Register" class="p-button-sm" (click)="goToRegister()"></button>
+        <ng-template #loggedInNav>
+          <div class="logged-in">
+            <span class="welcome">Hi, {{ currentUser?.username }}</span>
+            <button pButton type="button" label="Dashboard" class="p-button-outlined p-button-sm" (click)="goToDashboard()"></button>
+            <button pButton type="button" label="Logout" class="p-button-danger p-button-sm" (click)="logout()"></button>
           </div>
-          
-          <ng-template #loggedInNav>
-            <div class="flex items-center space-x-3">
-              <span class="text-sm text-gray-700">Welcome, {{ currentUser?.username }}</span>
-              <button pButton type="button" label="Dashboard" class="p-button-outlined p-button-sm" (click)="goToDashboard()"></button>
-              <button pButton type="button" label="Logout" class="p-button-danger p-button-sm" (click)="logout()"></button>
-            </div>
-          </ng-template>
-        </nav>
+        </ng-template>
+      </nav>
+      <button class="mobile-menu" (click)="toggleMobile()" aria-label="Toggle navigation">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+    <div class="mobile-drawer" [class.open]="mobileOpen">
+      <button (click)="scrollTo('home'); toggleMobile()" class="drawer-link">Home</button>
+      <button (click)="scrollTo('about'); toggleMobile()" class="drawer-link">About</button>
+      <button (click)="scrollTo('services'); toggleMobile()" class="drawer-link">Services</button>
+      <button (click)="scrollTo('contact'); toggleMobile()" class="drawer-link">Contact</button>
+      <div class="drawer-auth" *ngIf="!isLoggedIn; else loggedInDrawer">
+        <button pButton type="button" label="Login" class="p-button-outlined p-button-sm mr-2" (click)="goToLogin()"></button>
+        <button pButton type="button" label="Register" class="p-button-sm" (click)="goToRegister()"></button>
       </div>
+      <ng-template #loggedInDrawer>
+        <div class="drawer-auth">
+          <button pButton type="button" label="Dashboard" class="p-button-outlined p-button-sm" (click)="goToDashboard()"></button>
+          <button pButton type="button" label="Logout" class="p-button-danger p-button-sm" (click)="logout()"></button>
+        </div>
+      </ng-template>
     </div>
   </header>
 
   <!-- Hero Section -->
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-    <div class="text-center">
-      <h1 class="text-4xl font-extrabold text-gray-900 sm:text-5xl md:text-6xl">
-        <span class="block">Connecting Healthcare</span>
-        <span class="block text-indigo-600">Professionals</span>
-      </h1>
-      <p class="mt-3 max-w-md mx-auto text-base text-gray-500 sm:text-lg md:mt-5 md:text-xl md:max-w-3xl">
-        A comprehensive platform for doctors, pharmacists, and patients to collaborate and provide better healthcare services.
-      </p>
-      
-      <div class="mt-5 max-w-md mx-auto sm:flex sm:justify-center md:mt-8" *ngIf="!isLoggedIn">
-        <div class="rounded-md shadow">
-          <button pButton type="button" label="Get Started" class="p-button-lg" (click)="goToRegister()"></button>
+  <section id="home" class="hero-section section reveal">
+    <div class="hero-content">
+      <h1 class="hero-title">Connecting Healthcare, Empowering Lives</h1>
+      <p class="hero-subtitle">One platform for doctors, pharmacists, and patients to collaborate seamlessly.</p>
+      <p class="hero-description">Book appointments, manage prescriptions, and monitor care — securely and effortlessly.</p>
+      <div class="hero-buttons" *ngIf="!isLoggedIn; else dashboardCta">
+        <button pButton type="button" label="Get Started" class="p-button-lg hero-btn" (click)="goToRegister()"></button>
+        <button pButton type="button" label="Learn More" class="p-button-outlined p-button-lg hero-btn" (click)="scrollTo('about')"></button>
+      </div>
+      <ng-template #dashboardCta>
+        <div class="hero-buttons">
+          <button pButton type="button" label="Go to Dashboard" class="p-button-lg p-button-secondary hero-btn" (click)="goToDashboard()"></button>
         </div>
-        <div class="mt-3 rounded-md shadow sm:mt-0 sm:ml-3">
-          <button pButton type="button" label="Learn More" class="p-button-outlined p-button-lg"></button>
-        </div>
+      </ng-template>
+    </div>
+    <div class="hero-image">
+      <i class="pi pi-heart medical-illustration"></i>
+    </div>
+  </section>
+
+  <!-- About Section -->
+  <section id="about" class="features-section section reveal">
+    <h2 class="section-title">About MediConnect</h2>
+    <div class="features-grid">
+      <div class="feature-card">
+        <i class="pi pi-shield feature-icon"></i>
+        <h3>What it is</h3>
+        <p>A unified healthcare platform bridging patients, doctors, and pharmacists with secure data and workflows.</p>
+      </div>
+      <div class="feature-card">
+        <i class="pi pi-compass feature-icon"></i>
+        <h3>Why it exists</h3>
+        <p>To reduce friction in care delivery, improve outcomes, and save time for everyone involved.</p>
+      </div>
+      <div class="feature-card">
+        <i class="pi pi-bolt feature-icon"></i>
+        <h3>How it helps</h3>
+        <p>Appointment booking, digital prescriptions, pharmacy matching, and AI-assisted support — all in one place.</p>
       </div>
     </div>
+  </section>
 
-    <!-- Features Section -->
-    <div class="mt-24">
-      <div class="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
-        <!-- Doctor Feature -->
-        <div class="bg-white rounded-lg shadow-lg p-6">
-          <div class="text-center">
-            <i class="pi pi-user-md text-4xl text-blue-600 mb-4"></i>
-            <h3 class="text-lg font-medium text-gray-900 mb-2">For Doctors</h3>
-            <p class="text-gray-600">Manage patients, appointments, and prescriptions efficiently with our comprehensive dashboard.</p>
-          </div>
-        </div>
-
-        <!-- Pharmacist Feature -->
-        <div class="bg-white rounded-lg shadow-lg p-6">
-          <div class="text-center">
-            <i class="pi pi-shopping-cart text-4xl text-green-600 mb-4"></i>
-            <h3 class="text-lg font-medium text-gray-900 mb-2">For Pharmacists</h3>
-            <p class="text-gray-600">Handle prescriptions, manage inventory, and serve customers with our pharmacy management system.</p>
-          </div>
-        </div>
-
-        <!-- Patient Feature -->
-        <div class="bg-white rounded-lg shadow-lg p-6">
-          <div class="text-center">
-            <i class="pi pi-users text-4xl text-purple-600 mb-4"></i>
-            <h3 class="text-lg font-medium text-gray-900 mb-2">For Patients</h3>
-            <p class="text-gray-600">Access your medical records, book appointments, and manage prescriptions all in one place.</p>
-          </div>
-        </div>
+  <!-- Services Section -->
+  <section id="services" class="benefits-section section reveal">
+    <h2 class="section-title">Our Services</h2>
+    <div class="benefits-grid">
+      <div class="feature-card">
+        <i class="pi pi-user feature-icon"></i>
+        <h3>Patients</h3>
+        <p>View records, book appointments, chat with AI, and track prescriptions.</p>
+      </div>
+      <div class="feature-card">
+        <i class="pi pi-user-edit feature-icon"></i>
+        <h3>Doctors</h3>
+        <p>Manage schedules, write prescriptions, and monitor patient histories.</p>
+      </div>
+      <div class="feature-card">
+        <i class="pi pi-shopping-bag feature-icon"></i>
+        <h3>Pharmacists</h3>
+        <p>Receive orders, manage inventory, and provide delivery updates.</p>
       </div>
     </div>
+  </section>
 
-    <!-- CTA Section -->
-    <div class="mt-24 bg-indigo-700 rounded-lg shadow-xl overflow-hidden">
-      <div class="px-6 py-12 sm:px-12 lg:py-16">
-        <div class="lg:grid lg:grid-cols-2 lg:gap-8 lg:items-center">
-          <div>
-            <h2 class="text-3xl font-extrabold text-white sm:text-4xl">
-              Ready to get started?
-            </h2>
-            <p class="mt-3 max-w-3xl text-lg text-indigo-200">
-              Join thousands of healthcare professionals who are already using MediConnect to improve their practice and patient care.
-            </p>
-          </div>
-          <div class="mt-8 lg:mt-0">
-            <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3" *ngIf="!isLoggedIn">
-              <button pButton type="button" label="Sign Up Now" class="p-button-lg p-button-secondary" (click)="goToRegister()"></button>
-              <button pButton type="button" label="Contact Sales" class="p-button-outlined p-button-lg p-button-secondary"></button>
-            </div>
-            <div *ngIf="isLoggedIn">
-              <button pButton type="button" label="Go to Dashboard" class="p-button-lg p-button-secondary" (click)="goToDashboard()"></button>
-            </div>
-          </div>
+  <!-- Contact Section -->
+  <section id="contact" class="cta-section section reveal">
+    <div class="cta-content">
+      <h2>Contact Us</h2>
+      <p>Have questions or feedback? Send us a message — we’d love to help.</p>
+      <form [formGroup]="contactForm" (ngSubmit)="submitContact()" class="contact-form">
+        <div class="form-row">
+          <input type="text" placeholder="Name" formControlName="name" aria-label="Name" />
+          <input type="email" placeholder="Email" formControlName="email" aria-label="Email" />
         </div>
-      </div>
+        <div class="form-row">
+          <textarea rows="4" placeholder="Message" formControlName="message" aria-label="Message"></textarea>
+        </div>
+        <button pButton type="submit" label="Send" class="p-button-lg" [disabled]="contactForm.invalid || submitting"></button>
+        <span class="send-status" *ngIf="sent">Thanks! We’ll be in touch.</span>
+      </form>
     </div>
-  </main>
+  </section>
 
   <!-- Footer -->
-  <footer class="bg-gray-800">
-    <div class="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-      <div class="text-center text-gray-400">
-        <p>&copy; 2024 MediConnect. All rights reserved.</p>
-      </div>
-    </div>
+  <footer class="footer">
+    <div class="footer-bottom">© 2024 MediConnect. All rights reserved.</div>
   </footer>
 </div>

@@ -88,4 +88,18 @@ export class PrescriptionViewerComponent implements OnInit {
       window.open('http://localhost:8080' + this.prescription.prescriptionImageUrl, '_blank');
     }
   }
+  getStatusSeverity(status: string): 'success' | 'info' | 'warning' | 'danger' {
+  switch (status.toLowerCase()) {
+    case 'delivered':
+    case 'completed':
+      return 'success';
+    case 'pending':
+      return 'warning';
+    case 'cancelled':
+    case 'failed':
+      return 'danger';
+    default:
+      return 'info';
+  }
+}
 }
