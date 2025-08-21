@@ -31,6 +31,7 @@ import { PrescriptionViewerComponent } from './components/prescription-viewer/pr
 import { MedicineOrderComponent } from './components/medicine-order/medicine-order.component';
 import { OrderTrackingComponent } from './components/order-tracking/order-tracking.component';
 
+
 const routes = [
   { path: 'write/:appointmentId', component: PrescriptionWriterComponent },
   { path: 'write', component: PrescriptionWriterComponent },

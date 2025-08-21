@@ -9,6 +9,14 @@ export interface Doctor {
   email: string;
 }
 
+export interface Patient {
+  id: number;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber: string;
+}
+
 export interface DoctorSlot {
   id: number;
   doctorId: number;
@@ -33,6 +41,10 @@ export interface Appointment {
   homeRemedies?: string;
   specializationHint?: string;
   createdAt?: string;
+  // Backend response fields
+  patient?: Patient;
+  doctor?: Doctor;
+  slot?: DoctorSlot;
 }
 
 export interface AIConsultation {

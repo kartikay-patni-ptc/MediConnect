@@ -22,6 +22,8 @@ export class PrescriptionWriterComponent implements OnInit {
   uploadingFile = false;
   showFileUpload = false;
   createdPrescriptionId?: number;
+  
+
 
   medicineTypes = [
     { label: 'Prescription Medicine', value: MedicineType.PRESCRIPTION },
@@ -84,10 +86,20 @@ export class PrescriptionWriterComponent implements OnInit {
 
   ngOnInit(): void {
     this.appointmentId = Number(this.route.snapshot.paramMap.get('appointmentId'));
-    // Appointment ID is optional now - can write prescriptions without appointments
+    // Appointment ID is required - redirect to doctor dashboard if not provided
     if (this.appointmentId) {
       // Load appointment details if available
       this.loadAppointmentDetails();
+    } else {
+      // Redirect to doctor dashboard to select a patient
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'No Appointment Selected',
+        detail: 'Please select a patient from your appointments first.'
+      });
+      setTimeout(() => {
+        this.router.navigate(['/doctor/dashboard']);
+      }, 2000);
     }
   }
 
@@ -267,8 +279,6 @@ export class PrescriptionWriterComponent implements OnInit {
         control.controls.forEach(arrayControl => {
           if (arrayControl instanceof FormGroup) {
             this.markFormGroupTouched(arrayControl);
-          } else {
-            arrayControl.markAsTouched();
           }
         });
       } else {
@@ -276,6 +286,8 @@ export class PrescriptionWriterComponent implements OnInit {
       }
     });
   }
+
+
 
   isFieldInvalid(fieldName: string, arrayIndex?: number): boolean {
     if (arrayIndex !== undefined) {

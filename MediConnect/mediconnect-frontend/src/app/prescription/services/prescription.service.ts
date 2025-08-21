@@ -107,7 +107,16 @@ export class PrescriptionService {
   // Medicine Order Management
   createMedicineOrder(request: CreateOrderRequest): Observable<any> {
     return this.http.post(`${this.baseUrl}/medicine-orders/create`, request, { headers: this.getAuthHeaders() })
-      .pipe(tap(() => this.refreshOrders()));
+      .pipe(
+        map((response: any) => {
+          // Check if the response indicates success or failure
+          if (response.success === false) {
+            throw new Error(response.message || 'Failed to create order');
+          }
+          return response;
+        }),
+        tap(() => this.refreshOrders())
+      );
   }
 
   getPatientOrders(patientId: number): Observable<MedicineOrder[]> {
@@ -250,7 +259,10 @@ export class PrescriptionService {
     }
   }
 
-  formatDistance(km: number): string {
+  formatDistance(km: number | undefined | null): string {
+    if (!km || isNaN(km)) {
+      return 'N/A';
+    }
     if (km < 1) {
       return `${Math.round(km * 1000)} m`;
     }

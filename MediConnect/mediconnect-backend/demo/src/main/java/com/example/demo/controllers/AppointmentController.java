@@ -46,6 +46,11 @@ public class AppointmentController {
         return appointmentService.getAppointmentsByDoctor(id);
     }
 
+    @GetMapping("/{id}")
+    public Appointment getAppointmentById(@PathVariable Long id) {
+        return appointmentService.getAppointmentById(id);
+    }
+
     @PutMapping("/{id}/status")
     public Appointment updateStatus(@PathVariable Long id, @RequestBody Map<String, String> payload) {
         Appointment.Status status = Appointment.Status.valueOf(payload.get("status"));

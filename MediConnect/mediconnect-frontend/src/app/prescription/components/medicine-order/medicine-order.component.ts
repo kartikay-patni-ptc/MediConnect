@@ -64,6 +64,7 @@ export class MedicineOrderComponent implements OnInit {
   }
 
   private loadPatientInfo(): void {
+    // Try to get patient ID from userInfo first, but we'll also get it from prescription
     const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
     this.patientId = userInfo.id || 0;
   }
@@ -84,6 +85,27 @@ export class MedicineOrderComponent implements OnInit {
       next: (prescription) => {
         this.prescription = prescription;
         this.loading = false;
+        
+        // Set patient ID from prescription data
+        console.log('Prescription data:', prescription);
+        console.log('Prescription patient:', prescription.patient);
+        console.log('Prescription appointment:', prescription.appointment);
+        
+        if (prescription.patient?.id) {
+          this.patientId = prescription.patient.id;
+          console.log('Set patientId from prescription.patient.id:', this.patientId);
+        } else if (prescription.appointment?.patient?.id) {
+          this.patientId = prescription.appointment.patient.id;
+          console.log('Set patientId from prescription.appointment.patient.id:', this.patientId);
+        } else {
+          console.log('Could not find patient ID in prescription data');
+          // Fallback: try to get from userInfo
+          const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
+          if (userInfo.id && userInfo.role === 'PATIENT') {
+            this.patientId = userInfo.id;
+            console.log('Fallback: Set patientId from userInfo:', this.patientId);
+          }
+        }
         
         // Validate prescription can be used for ordering
         if (prescription.status !== PrescriptionStatus.ACTIVE) {
@@ -238,6 +260,36 @@ export class MedicineOrderComponent implements OnInit {
     this.creatingOrder = true;
     
     const formValue = this.orderForm.value;
+    
+    // Debug: Log the values being sent
+    console.log('Creating order with:', {
+      prescriptionId: this.prescriptionId,
+      patientId: this.patientId,
+      prescription: this.prescription,
+      userInfo: JSON.parse(localStorage.getItem('userInfo') || '{}')
+    });
+    
+    // Validate required data
+    if (!this.prescriptionId || this.prescriptionId <= 0) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Invalid Prescription',
+        detail: 'Prescription ID is invalid'
+      });
+      this.creatingOrder = false;
+      return;
+    }
+    
+    if (!this.patientId || this.patientId <= 0) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Invalid Patient',
+        detail: 'Patient ID is invalid. Please refresh the page and try again.'
+      });
+      this.creatingOrder = false;
+      return;
+    }
+    
     const request: CreateOrderRequest = {
       prescriptionId: this.prescriptionId,
       patientId: this.patientId,

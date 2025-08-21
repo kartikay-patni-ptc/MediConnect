@@ -73,5 +73,10 @@ public class AppointmentService {
         appointment.setStatus(status);
         return appointmentRepository.save(appointment);
     }
+
+    public Appointment getAppointmentById(Long appointmentId) {
+        return appointmentRepository.findById(appointmentId)
+                .orElseThrow(() -> new IllegalArgumentException("Appointment not found"));
+    }
 }
 

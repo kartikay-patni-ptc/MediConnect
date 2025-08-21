@@ -70,10 +70,10 @@ public class MedicineOrderController {
         }
     }
 
-    @GetMapping("/pharmacy/{pharmacyId}")
-    public ResponseEntity<?> getPharmacyOrders(@PathVariable Long pharmacyId) {
+    @GetMapping("/pharmacy/{pharmacyUserId}")
+    public ResponseEntity<?> getPharmacyOrders(@PathVariable Long pharmacyUserId) {
         try {
-            List<MedicineOrder> orders = medicineOrderService.getPharmacyOrders(pharmacyId);
+            List<MedicineOrder> orders = medicineOrderService.getPharmacyOrdersByUserId(pharmacyUserId);
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
@@ -87,6 +87,38 @@ public class MedicineOrderController {
             response.put("success", false);
             response.put("message", "Failed to get pharmacy orders: " + e.getMessage());
             return ResponseEntity.badRequest().body(response);
+        }
+    }
+
+    @GetMapping("/pharmacy/{pharmacyUserId}/statistics")
+    public ResponseEntity<?> getPharmacyOrderStatistics(@PathVariable Long pharmacyUserId) {
+        try {
+            List<MedicineOrder> orders = medicineOrderService.getPharmacyOrdersByUserId(pharmacyUserId);
+            Map<String, Object> stats = new HashMap<>();
+            stats.put("totalOrders", orders.size());
+            stats.put("pendingOrders", orders.stream().filter(o -> o.getStatus() == MedicineOrder.OrderStatus.PENDING || o.getStatus() == MedicineOrder.OrderStatus.PHARMACY_ASSIGNED).count());
+            stats.put("acceptedOrders", orders.stream().filter(o -> o.getStatus() == MedicineOrder.OrderStatus.ACCEPTED).count());
+            stats.put("preparingOrders", orders.stream().filter(o -> o.getStatus() == MedicineOrder.OrderStatus.PREPARING).count());
+            stats.put("readyOrders", orders.stream().filter(o -> o.getStatus() == MedicineOrder.OrderStatus.READY_FOR_PICKUP).count());
+            stats.put("deliveredOrders", orders.stream().filter(o -> o.getStatus() == MedicineOrder.OrderStatus.DELIVERED).count());
+            return ResponseEntity.ok(stats);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Failed to get statistics: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/pharmacy/{pharmacyUserId}/recent")
+    public ResponseEntity<?> getRecentOrders(@PathVariable Long pharmacyUserId, @RequestParam(defaultValue = "10") int limit) {
+        try {
+            List<MedicineOrder> orders = medicineOrderService.getPharmacyOrdersByUserId(pharmacyUserId);
+            // Sort by creation date and limit results
+            List<MedicineOrder> recentOrders = orders.stream()
+                .sorted((o1, o2) -> o2.getCreatedAt().compareTo(o1.getCreatedAt()))
+                .limit(limit)
+                .collect(java.util.stream.Collectors.toList());
+            return ResponseEntity.ok(recentOrders);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Failed to get recent orders: " + e.getMessage());
         }
     }
 

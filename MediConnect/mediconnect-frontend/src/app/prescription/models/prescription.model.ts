@@ -129,19 +129,7 @@ export interface OrderPayment {
   refundedAt?: Date;
 }
 
-export interface PharmacyStore {
-  id?: number;
-  name: string;
-  ownerName: string;
-  licenseNumber: string;
-  phoneNumber: string;
-  email: string;
-  address: string;
-  description?: string;
-  latitude?: number;
-  longitude?: number;
-  distance?: number; // Calculated distance from patient
-}
+
 
 // Enums
 export enum PrescriptionStatus {
@@ -244,4 +232,21 @@ export interface DeliveryEstimate {
   distance: number;
   estimatedTimeMinutes: number;
   deliveryFee: number;
+}
+
+export interface PharmacyStore {
+  id: number;
+  name: string;
+  address: string;
+  pincode: string;
+  phone: string;
+  email?: string;
+  rating?: number;
+  distance: number;
+  deliveryTime?: string;
+  isOpen: boolean;
+  coordinates?: {
+    latitude: number;
+    longitude: number;
+  };
 }

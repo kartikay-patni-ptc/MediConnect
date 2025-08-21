@@ -1,0 +1,100 @@
+<div class="patient-selection-dialog">
+  <p-dialog 
+    [(visible)]="visible" 
+    [modal]="true" 
+    [closable]="true"
+    [draggable]="false"
+    [resizable]="false"
+    header="Select Patient for Prescription"
+    styleClass="w-4xl"
+    (onHide)="closeDialog()">
+    
+    <div class="p-4">
+      <!-- Search Bar -->
+      <div class="mb-6">
+        <div class="relative">
+          <i class="pi pi-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+          <input 
+            [formControl]="searchControl"
+            type="text" 
+            placeholder="Search patients by name, type, or status..."
+            class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+        </div>
+      </div>
+
+      <!-- Loading State -->
+      <div *ngIf="loading" class="flex justify-center items-center py-8">
+        <p-progressSpinner></p-progressSpinner>
+        <span class="ml-3 text-gray-600">Loading appointments...</span>
+      </div>
+
+      <!-- Appointments List -->
+      <div *ngIf="!loading && filteredAppointments.length > 0" class="space-y-3 max-h-96 overflow-y-auto">
+        <div 
+          *ngFor="let appointment of filteredAppointments" 
+          class="bg-white border border-gray-200 rounded-lg p-4 hover:border-blue-300 hover:shadow-md transition-all cursor-pointer"
+          (click)="selectPatient(appointment)">
+          
+          <div class="flex items-center justify-between">
+            <div class="flex-1">
+              <div class="flex items-center gap-3 mb-2">
+                <h3 class="text-lg font-semibold text-gray-900">{{ appointment.patientName }}</h3>
+                <span 
+                  [class]="'text-xs font-medium px-2 py-1 rounded-full ' + getStatusSeverityClass(appointment.status)">
+                  {{ appointment.status }}
+                </span>
+              </div>
+              
+              <div class="flex items-center gap-4 text-sm text-gray-600">
+                <span class="flex items-center gap-1">
+                  <i class="pi pi-calendar"></i>
+                  {{ appointment.time }}
+                </span>
+                <span class="flex items-center gap-1">
+                  <i class="pi pi-user"></i>
+                  {{ appointment.type }}
+                </span>
+              </div>
+              
+              <div *ngIf="appointment.notes" class="mt-2 text-sm text-gray-700 bg-gray-50 p-2 rounded">
+                <strong>Notes:</strong> {{ appointment.notes }}
+              </div>
+            </div>
+            
+            <div class="flex items-center gap-2">
+              <button 
+                pButton 
+                label="Select" 
+                icon="pi pi-check" 
+                class="p-button-sm p-button-primary"
+                (click)="selectPatient(appointment); $event.stopPropagation()">
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="!loading && filteredAppointments.length === 0" class="text-center py-8">
+        <i class="pi pi-users text-6xl text-gray-300 mb-4"></i>
+        <h3 class="text-lg font-medium text-gray-900 mb-2">No appointments found</h3>
+        <p class="text-gray-600">
+          {{ appointments.length === 0 ? 'You don\'t have any appointments yet.' : 'No appointments match your search criteria.' }}
+        </p>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <ng-template pTemplate="footer">
+      <div class="flex justify-end gap-3">
+        <button 
+          pButton 
+          label="Cancel" 
+          icon="pi pi-times" 
+          class="p-button-secondary"
+          (click)="closeDialog()">
+        </button>
+      </div>
+    </ng-template>
+  </p-dialog>
+</div>

@@ -9,6 +9,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.ArrayList;
 
 @Service
 public class MedicineOrderService {
@@ -63,6 +64,9 @@ public class MedicineOrderService {
         order.setPatientPhoneNumber(patient.getPhoneNumber());
         order.setSpecialInstructions(specialInstructions);
 
+        // Initialize order items list
+        List<OrderItem> orderItems = new ArrayList<>();
+
         // Create order items from prescription medicines
         for (PrescriptionMedicine medicine : prescription.getMedicines()) {
             OrderItem orderItem = new OrderItem();
@@ -72,19 +76,34 @@ public class MedicineOrderService {
             orderItem.setDosage(medicine.getDosage());
             orderItem.setQuantityRequested(medicine.getQuantity());
             orderItem.setStatus(OrderItem.ItemStatus.PENDING);
+            orderItems.add(orderItem);
         }
+
+        // Set the order items
+        order.setOrderItems(orderItems);
+
+        // Calculate basic amounts (can be enhanced with actual pricing logic)
+        BigDecimal baseAmount = new BigDecimal("100.00"); // Base price per medicine
+        BigDecimal totalAmount = baseAmount.multiply(new BigDecimal(orderItems.size()));
+        BigDecimal deliveryFee = new BigDecimal("50.00"); // Fixed delivery fee
+        BigDecimal finalAmount = totalAmount.add(deliveryFee);
+
+        order.setTotalAmount(totalAmount);
+        order.setDeliveryFee(deliveryFee);
+        order.setFinalAmount(finalAmount);
 
         MedicineOrder savedOrder = medicineOrderRepository.save(order);
 
         // Try to find and assign a pharmacy
         try {
-            assignPharmacy(savedOrder.getId(), deliveryPincode);
+            MedicineOrder assignedOrder = assignPharmacy(savedOrder.getId(), deliveryPincode);
+            return assignedOrder; // Return the updated order with pharmacy assigned
         } catch (Exception e) {
             // Log error but don't fail the order creation
             System.err.println("Failed to auto-assign pharmacy: " + e.getMessage());
+            // Return the order without pharmacy - it will be assigned later
+            return savedOrder;
         }
-
-        return savedOrder;
     }
 
     public MedicineOrder assignPharmacy(Long orderId, String pincode) {
@@ -95,17 +114,27 @@ public class MedicineOrderService {
 
         MedicineOrder order = orderOpt.get();
         
-        // Find nearest available pharmacy
+        // First try to find nearby pharmacies by pincode
         List<PharmacyStore> nearbyPharmacies = pharmacyMatchingService.findNearbyPharmacies(pincode, 10.0); // 10km radius
         
         if (nearbyPharmacies.isEmpty()) {
-            throw new RuntimeException("No pharmacies available in the area");
+            // Fallback: get any available pharmacy
+            List<PharmacyStore> allPharmacies = pharmacyStoreRepository.findAll();
+            if (allPharmacies.isEmpty()) {
+                throw new RuntimeException("No pharmacies available in the system");
+            }
+            // Assign to the first available pharmacy
+            PharmacyStore assignedPharmacy = allPharmacies.get(0);
+            order.setPharmacy(assignedPharmacy);
+            order.setStatus(MedicineOrder.OrderStatus.PHARMACY_ASSIGNED);
+            System.out.println("Assigned order " + orderId + " to pharmacy: " + assignedPharmacy.getName());
+        } else {
+            // Assign to the nearest pharmacy
+            PharmacyStore assignedPharmacy = nearbyPharmacies.get(0);
+            order.setPharmacy(assignedPharmacy);
+            order.setStatus(MedicineOrder.OrderStatus.PHARMACY_ASSIGNED);
+            System.out.println("Assigned order " + orderId + " to nearby pharmacy: " + assignedPharmacy.getName());
         }
-
-        // Assign to the first available pharmacy (can be enhanced with more logic)
-        PharmacyStore assignedPharmacy = nearbyPharmacies.get(0);
-        order.setPharmacy(assignedPharmacy);
-        order.setStatus(MedicineOrder.OrderStatus.PHARMACY_ASSIGNED);
 
         return medicineOrderRepository.save(order);
     }
@@ -190,6 +219,15 @@ public class MedicineOrderService {
         return medicineOrderRepository.findByPharmacyOrderByCreatedAtDesc(pharmacyOpt.get());
     }
 
+    public List<MedicineOrder> getPharmacyOrdersByUserId(Long pharmacyUserId) {
+        Optional<PharmacyStore> pharmacyOpt = pharmacyStoreRepository.findByUserId(pharmacyUserId);
+        if (!pharmacyOpt.isPresent()) {
+            throw new RuntimeException("Pharmacy not found for user id: " + pharmacyUserId);
+        }
+        
+        return medicineOrderRepository.findByPharmacyOrderByCreatedAtDesc(pharmacyOpt.get());
+    }
+
     public List<MedicineOrder> getPendingOrders() {
         return medicineOrderRepository.findByStatusOrderByCreatedAtAsc(MedicineOrder.OrderStatus.PENDING);
     }
@@ -218,5 +256,33 @@ public class MedicineOrderService {
         }
         
         return medicineOrderRepository.countByPatientAndStatus(patientOpt.get(), status);
+    }
+
+    // New methods for pharmacy order management
+    public MedicineOrder acceptOrder(Long orderId) {
+        Optional<MedicineOrder> orderOpt = medicineOrderRepository.findById(orderId);
+        if (!orderOpt.isPresent()) {
+            throw new RuntimeException("Order not found with id: " + orderId);
+        }
+
+        MedicineOrder order = orderOpt.get();
+        order.setStatus(MedicineOrder.OrderStatus.ACCEPTED);
+        order.setAcceptedAt(LocalDateTime.now());
+        order.setExpectedDeliveryTime(LocalDateTime.now().plusHours(2)); // Default 2 hours
+
+        return medicineOrderRepository.save(order);
+    }
+
+    public MedicineOrder rejectOrder(Long orderId, String rejectionReason) {
+        Optional<MedicineOrder> orderOpt = medicineOrderRepository.findById(orderId);
+        if (!orderOpt.isPresent()) {
+            throw new RuntimeException("Order not found with id: " + orderId);
+        }
+
+        MedicineOrder order = orderOpt.get();
+        order.setStatus(MedicineOrder.OrderStatus.REJECTED);
+        order.setRejectionReason(rejectionReason);
+
+        return medicineOrderRepository.save(order);
     }
 }

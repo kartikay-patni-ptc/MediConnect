@@ -12,6 +12,7 @@ import { DoctorProfileComponent } from './profile/doctor-profile.component';
 import { SlotManagementComponent } from './slot-management/slot-management.component';
 import { AppointmentsComponent } from './appointments/appointments.component';
 import { DoctorRoutingModule } from './doctor-routing.module';
+import { PatientSelectionDialogComponent } from '../prescription/components/patient-selection-dialog/patient-selection-dialog.component';
 
 import { FormsModule } from '@angular/forms';
 import { TableModule } from 'primeng/table';
@@ -28,6 +29,8 @@ import { CalendarModule } from 'primeng/calendar';
 import { TooltipModule } from 'primeng/tooltip';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { DropdownModule } from 'primeng/dropdown';
+import { BadgeModule } from 'primeng/badge';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
 
 
 @NgModule({
@@ -35,9 +38,10 @@ import { DropdownModule } from 'primeng/dropdown';
     DashboardComponent,
     DoctorProfileComponent,
     SlotManagementComponent,
-    AppointmentsComponent
-
+    AppointmentsComponent,
+    PatientSelectionDialogComponent
     SlotManagementComponent
+
 
   ],
   imports: [
@@ -65,9 +69,10 @@ import { DropdownModule } from 'primeng/dropdown';
     ToastModule,
     TooltipModule,
     ConfirmDialogModule,
-    DropdownModule
+    DropdownModule,
+    BadgeModule,
+    ProgressSpinnerModule
 
-    ConfirmDialogModule
   ],
   providers: [MessageService]
 })
