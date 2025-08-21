@@ -155,7 +155,34 @@ export class AuthService {
   }
 
   isLoggedIn(): boolean {
-    return !!this.getToken();
+    const token = this.getToken();
+    if (!token) { return false; }
+    if (this.isTokenExpired(token)) {
+      this.logout();
+      return false;
+    }
+    return true;
+  }
+
+  private decodeJwt(token: string): any | null {
+    try {
+      const payload = token.split('.')[1];
+      const decoded = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
+      return JSON.parse(decodeURIComponent(Array.prototype.map.call(decoded, (c: string) => {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+      }).join('')));
+    } catch {
+      return null;
+    }
+  }
+
+  isTokenExpired(token?: string): boolean {
+    const jwt = token || this.getToken();
+    if (!jwt) { return true; }
+    const payload = this.decodeJwt(jwt);
+    if (!payload || !payload.exp) { return true; }
+    const nowSeconds = Math.floor(Date.now() / 1000);
+    return payload.exp < nowSeconds;
   }
 
   getCurrentUser(): any {
