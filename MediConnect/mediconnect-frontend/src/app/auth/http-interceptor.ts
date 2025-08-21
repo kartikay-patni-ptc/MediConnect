@@ -28,9 +28,21 @@ export const authInterceptor: HttpInterceptorFn = (request, next) => {
       if (error.status === 0) {
         console.error('Network error - server might be down');
       } else if (error.status === 401) {
-        console.error('Unauthorized - token might be invalid');
+        console.error('Unauthorized - token invalid or expired');
+        // Clear local session and redirect
+        localStorage.removeItem('token');
+        localStorage.removeItem('username');
+        localStorage.removeItem('role');
+        localStorage.removeItem('userId');
+        // Use hard redirect to avoid DI here
+        if (typeof window !== 'undefined') {
+          window.location.href = '/auth/login';
+        }
       } else if (error.status === 403) {
         console.error('Forbidden - insufficient permissions');
+        if (typeof window !== 'undefined') {
+          window.location.href = '/home';
+        }
       } else if (error.status === 404) {
         console.error('Not found - endpoint might not exist');
       } else if (error.status >= 500) {
