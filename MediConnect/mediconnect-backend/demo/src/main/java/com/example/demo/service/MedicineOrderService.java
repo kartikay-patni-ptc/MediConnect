@@ -285,4 +285,161 @@ public class MedicineOrderService {
 
         return medicineOrderRepository.save(order);
     }
+
+    public List<MedicineOrderDto> getPharmacyOrdersByUserIdAsDto(Long pharmacyUserId) {
+        Optional<PharmacyStore> pharmacyOpt = pharmacyStoreRepository.findByUserId(pharmacyUserId);
+        if (!pharmacyOpt.isPresent()) {
+            throw new RuntimeException("Pharmacy not found for user id: " + pharmacyUserId);
+        }
+        
+        List<MedicineOrder> orders = medicineOrderRepository.findByPharmacyWithPatientAndPrescriptionOrderByCreatedAtDesc(pharmacyOpt.get());
+        return orders.stream()
+                .map(this::convertToDto)
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    public List<MedicineOrderDto> getPatientOrdersAsDto(Long patientId) {
+        Optional<Patient> patientOpt = patientRepository.findById(patientId);
+        if (!patientOpt.isPresent()) {
+            throw new RuntimeException("Patient not found with id: " + patientId);
+        }
+        
+        List<MedicineOrder> orders = medicineOrderRepository.findByPatientWithPatientAndPrescriptionOrderByCreatedAtDesc(patientOpt.get());
+        return orders.stream()
+                .map(this::convertToDto)
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    public List<MedicineOrderDto> getPendingOrdersAsDto() {
+        List<MedicineOrder> orders = medicineOrderRepository.findByStatusWithPatientAndPrescriptionOrderByCreatedAtAsc(MedicineOrder.OrderStatus.PENDING);
+        return orders.stream()
+                .map(this::convertToDto)
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    public MedicineOrderDto getOrderByIdAsDto(Long orderId) {
+        Optional<MedicineOrder> orderOpt = medicineOrderRepository.findByIdWithPatientAndPrescription(orderId);
+        if (!orderOpt.isPresent()) {
+            throw new RuntimeException("Order not found with id: " + orderId);
+        }
+        return convertToDto(orderOpt.get());
+    }
+
+    public MedicineOrderDto getOrderByNumberAsDto(String orderNumber) {
+        Optional<MedicineOrder> orderOpt = medicineOrderRepository.findByOrderNumberWithPatientAndPrescription(orderNumber);
+        if (!orderOpt.isPresent()) {
+            throw new RuntimeException("Order not found with number: " + orderNumber);
+        }
+        return convertToDto(orderOpt.get());
+    }
+
+    public MedicineOrderDto convertToDto(MedicineOrder order) {
+        MedicineOrderDto dto = new MedicineOrderDto();
+        dto.setId(order.getId());
+        dto.setOrderNumber(order.getOrderNumber());
+        dto.setStatus(order.getStatus());
+        dto.setOrderType(order.getOrderType());
+        dto.setTotalAmount(order.getTotalAmount());
+        dto.setDeliveryFee(order.getDeliveryFee());
+        dto.setFinalAmount(order.getFinalAmount());
+        dto.setDeliveryAddress(order.getDeliveryAddress());
+        dto.setDeliveryPincode(order.getDeliveryPincode());
+        dto.setPatientPhoneNumber(order.getPatientPhoneNumber());
+        dto.setSpecialInstructions(order.getSpecialInstructions());
+        dto.setPharmacyNotes(order.getPharmacyNotes());
+        dto.setRejectionReason(order.getRejectionReason());
+        dto.setCreatedAt(order.getCreatedAt());
+        dto.setUpdatedAt(order.getUpdatedAt());
+        dto.setAcceptedAt(order.getAcceptedAt());
+        dto.setExpectedDeliveryTime(order.getExpectedDeliveryTime());
+
+        // Convert patient to DTO (excluding sensitive user data)
+        if (order.getPatient() != null) {
+            PatientDto patientDto = new PatientDto();
+            patientDto.setId(order.getPatient().getId());
+            patientDto.setFirstName(order.getPatient().getFirstName());
+            patientDto.setLastName(order.getPatient().getLastName());
+            patientDto.setPhoneNumber(order.getPatient().getPhoneNumber());
+            patientDto.setEmail(order.getPatient().getEmail());
+            patientDto.setDateOfBirth(order.getPatient().getDateOfBirth());
+            patientDto.setGender(order.getPatient().getGender());
+            patientDto.setAddress(order.getPatient().getAddress());
+            patientDto.setEmergencyContact(order.getPatient().getEmergencyContact());
+            patientDto.setMedicalHistory(order.getPatient().getMedicalHistory());
+            dto.setPatient(patientDto);
+        }
+
+        // Convert pharmacy to DTO (excluding sensitive user data)
+        if (order.getPharmacy() != null) {
+            PharmacyStoreDto pharmacyDto = new PharmacyStoreDto();
+            pharmacyDto.setId(order.getPharmacy().getId());
+            pharmacyDto.setName(order.getPharmacy().getName());
+            pharmacyDto.setOwnerName(order.getPharmacy().getOwnerName());
+            pharmacyDto.setLicenseNumber(order.getPharmacy().getLicenseNumber());
+            pharmacyDto.setPhoneNumber(order.getPharmacy().getPhoneNumber());
+            pharmacyDto.setEmail(order.getPharmacy().getEmail());
+            pharmacyDto.setAddress(order.getPharmacy().getAddress());
+            pharmacyDto.setDescription(order.getPharmacy().getDescription());
+            pharmacyDto.setLatitude(order.getPharmacy().getLatitude());
+            pharmacyDto.setLongitude(order.getPharmacy().getLongitude());
+            dto.setPharmacy(pharmacyDto);
+        }
+
+        // Convert prescription to DTO (excluding sensitive data)
+        if (order.getPrescription() != null) {
+            PrescriptionDto prescriptionDto = new PrescriptionDto();
+            prescriptionDto.setId(order.getPrescription().getId());
+            prescriptionDto.setPrescriptionNumber(order.getPrescription().getPrescriptionNumber());
+            prescriptionDto.setPrescribedDate(order.getPrescription().getIssuedDate());
+            prescriptionDto.setDiagnosis(order.getPrescription().getDiagnosis());
+            prescriptionDto.setNotes(order.getPrescription().getDoctorNotes());
+            prescriptionDto.setStatus(order.getPrescription().getStatus().toString());
+            dto.setPrescription(prescriptionDto);
+        }
+
+        // Convert order items to DTOs
+        if (order.getOrderItems() != null) {
+            List<OrderItemDto> orderItemDtos = order.getOrderItems().stream()
+                    .map(item -> {
+                        OrderItemDto itemDto = new OrderItemDto();
+                        itemDto.setId(item.getId());
+                        itemDto.setMedicineName(item.getMedicineName());
+                        itemDto.setDosage(item.getDosage());
+                        itemDto.setQuantity(item.getQuantityRequested());
+                        itemDto.setUnitPrice(item.getUnitPrice());
+                        itemDto.setTotalPrice(item.getTotalPrice());
+                        itemDto.setInstructions(item.getSubstitutionNote());
+                        return itemDto;
+                    })
+                    .collect(java.util.stream.Collectors.toList());
+            dto.setOrderItems(orderItemDtos);
+        }
+
+        // Convert delivery tracking to DTO
+        if (order.getDeliveryTracking() != null) {
+            DeliveryTrackingDto trackingDto = new DeliveryTrackingDto();
+            trackingDto.setId(order.getDeliveryTracking().getId());
+            trackingDto.setStatus(order.getDeliveryTracking().getDeliveryStatus().toString());
+            trackingDto.setCurrentLocation(order.getDeliveryTracking().getCurrentLatitude() + "," + order.getDeliveryTracking().getCurrentLongitude());
+            trackingDto.setEstimatedDeliveryTime(order.getDeliveryTracking().getEstimatedDeliveryTime().toString());
+            trackingDto.setLastUpdated(order.getDeliveryTracking().getUpdatedAt());
+            trackingDto.setDeliveryPartnerName(order.getDeliveryTracking().getDeliveryPartnerName());
+            trackingDto.setDeliveryPartnerPhone(order.getDeliveryTracking().getDeliveryPartnerPhone());
+            dto.setDeliveryTracking(trackingDto);
+        }
+
+        // Convert payment to DTO
+        if (order.getPayment() != null) {
+            OrderPaymentDto paymentDto = new OrderPaymentDto();
+            paymentDto.setId(order.getPayment().getId());
+            paymentDto.setPaymentMethod(order.getPayment().getPaymentMethod().toString());
+            paymentDto.setTransactionId(order.getPayment().getTransactionId());
+            paymentDto.setAmount(order.getPayment().getAmount());
+            paymentDto.setStatus(order.getPayment().getPaymentStatus().toString());
+            paymentDto.setPaymentDate(order.getPayment().getPaidAt());
+            dto.setPayment(paymentDto);
+        }
+
+        return dto;
+    }
 }
