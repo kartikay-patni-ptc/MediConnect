@@ -1,9 +1,14 @@
 package com.example.demo.model;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class PatientDto {
+    private Long id;
     private String firstName;
     private String lastName;
     private String phoneNumber;
@@ -13,5 +18,5 @@ public class PatientDto {
     private String address;
     private String emergencyContact;
     private String medicalHistory;
-    private Long userId;
+    // Note: User object is intentionally excluded to prevent password exposure
 }

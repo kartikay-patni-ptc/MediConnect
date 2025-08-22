@@ -34,10 +34,12 @@ public class MedicineOrderController {
                 request.getSpecialInstructions()
             );
 
+            MedicineOrderDto orderDto = medicineOrderService.convertToDto(order);
+
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("message", "Medicine order created successfully");
-            response.put("order", order);
+            response.put("order", orderDto);
             response.put("orderNumber", order.getOrderNumber());
 
             return ResponseEntity.ok(response);
@@ -53,7 +55,7 @@ public class MedicineOrderController {
     @GetMapping("/patient/{patientId}")
     public ResponseEntity<?> getPatientOrders(@PathVariable Long patientId) {
         try {
-            List<MedicineOrder> orders = medicineOrderService.getPatientOrders(patientId);
+            List<MedicineOrderDto> orders = medicineOrderService.getPatientOrdersAsDto(patientId);
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
@@ -73,7 +75,7 @@ public class MedicineOrderController {
     @GetMapping("/pharmacy/{pharmacyUserId}")
     public ResponseEntity<?> getPharmacyOrders(@PathVariable Long pharmacyUserId) {
         try {
-            List<MedicineOrder> orders = medicineOrderService.getPharmacyOrdersByUserId(pharmacyUserId);
+            List<MedicineOrderDto> orders = medicineOrderService.getPharmacyOrdersByUserIdAsDto(pharmacyUserId);
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
@@ -93,7 +95,7 @@ public class MedicineOrderController {
     @GetMapping("/pharmacy/{pharmacyUserId}/statistics")
     public ResponseEntity<?> getPharmacyOrderStatistics(@PathVariable Long pharmacyUserId) {
         try {
-            List<MedicineOrder> orders = medicineOrderService.getPharmacyOrdersByUserId(pharmacyUserId);
+            List<MedicineOrderDto> orders = medicineOrderService.getPharmacyOrdersByUserIdAsDto(pharmacyUserId);
             Map<String, Object> stats = new HashMap<>();
             stats.put("totalOrders", orders.size());
             stats.put("pendingOrders", orders.stream().filter(o -> o.getStatus() == MedicineOrder.OrderStatus.PENDING || o.getStatus() == MedicineOrder.OrderStatus.PHARMACY_ASSIGNED).count());
@@ -110,9 +112,9 @@ public class MedicineOrderController {
     @GetMapping("/pharmacy/{pharmacyUserId}/recent")
     public ResponseEntity<?> getRecentOrders(@PathVariable Long pharmacyUserId, @RequestParam(defaultValue = "10") int limit) {
         try {
-            List<MedicineOrder> orders = medicineOrderService.getPharmacyOrdersByUserId(pharmacyUserId);
+            List<MedicineOrderDto> orders = medicineOrderService.getPharmacyOrdersByUserIdAsDto(pharmacyUserId);
             // Sort by creation date and limit results
-            List<MedicineOrder> recentOrders = orders.stream()
+            List<MedicineOrderDto> recentOrders = orders.stream()
                 .sorted((o1, o2) -> o2.getCreatedAt().compareTo(o1.getCreatedAt()))
                 .limit(limit)
                 .collect(java.util.stream.Collectors.toList());
@@ -125,7 +127,7 @@ public class MedicineOrderController {
     @GetMapping("/pending")
     public ResponseEntity<?> getPendingOrders() {
         try {
-            List<MedicineOrder> orders = medicineOrderService.getPendingOrders();
+            List<MedicineOrderDto> orders = medicineOrderService.getPendingOrdersAsDto();
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
@@ -145,18 +147,11 @@ public class MedicineOrderController {
     @GetMapping("/{orderId}")
     public ResponseEntity<?> getOrderById(@PathVariable Long orderId) {
         try {
-            Optional<MedicineOrder> orderOpt = medicineOrderService.getOrderById(orderId);
-            
-            if (!orderOpt.isPresent()) {
-                Map<String, Object> response = new HashMap<>();
-                response.put("success", false);
-                response.put("message", "Order not found");
-                return ResponseEntity.notFound().build();
-            }
+            MedicineOrderDto order = medicineOrderService.getOrderByIdAsDto(orderId);
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
-            response.put("order", orderOpt.get());
+            response.put("order", order);
 
             return ResponseEntity.ok(response);
 
@@ -171,18 +166,11 @@ public class MedicineOrderController {
     @GetMapping("/number/{orderNumber}")
     public ResponseEntity<?> getOrderByNumber(@PathVariable String orderNumber) {
         try {
-            Optional<MedicineOrder> orderOpt = medicineOrderService.getOrderByNumber(orderNumber);
-            
-            if (!orderOpt.isPresent()) {
-                Map<String, Object> response = new HashMap<>();
-                response.put("success", false);
-                response.put("message", "Order not found");
-                return ResponseEntity.notFound().build();
-            }
+            MedicineOrderDto order = medicineOrderService.getOrderByNumberAsDto(orderNumber);
 
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
-            response.put("order", orderOpt.get());
+            response.put("order", order);
 
             return ResponseEntity.ok(response);
 
@@ -199,10 +187,12 @@ public class MedicineOrderController {
         try {
             MedicineOrder order = medicineOrderService.acceptOrder(orderId, request.getPharmacyId());
 
+            MedicineOrderDto orderDto = medicineOrderService.convertToDto(order);
+
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("message", "Order accepted successfully");
-            response.put("order", order);
+            response.put("order", orderDto);
 
             return ResponseEntity.ok(response);
 
@@ -214,6 +204,8 @@ public class MedicineOrderController {
         }
     }
 
+
+
     @PostMapping("/{orderId}/reject")
     public ResponseEntity<?> rejectOrder(@PathVariable Long orderId, @RequestBody RejectOrderRequest request) {
         try {
@@ -223,10 +215,12 @@ public class MedicineOrderController {
                 request.getRejectionReason()
             );
 
+            MedicineOrderDto orderDto = medicineOrderService.convertToDto(order);
+
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("message", "Order rejected successfully");
-            response.put("order", order);
+            response.put("order", orderDto);
 
             return ResponseEntity.ok(response);
 
@@ -243,10 +237,12 @@ public class MedicineOrderController {
         try {
             MedicineOrder order = medicineOrderService.updateOrderStatus(orderId, request.getStatus());
 
+            MedicineOrderDto orderDto = medicineOrderService.convertToDto(order);
+
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("message", "Order status updated successfully");
-            response.put("order", order);
+            response.put("order", orderDto);
 
             return ResponseEntity.ok(response);
 

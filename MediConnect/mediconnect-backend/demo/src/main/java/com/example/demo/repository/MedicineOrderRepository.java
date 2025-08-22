@@ -48,4 +48,19 @@ public interface MedicineOrderRepository extends JpaRepository<MedicineOrder, Lo
                                                @Param("status") OrderStatus status,
                                                @Param("startDate") LocalDateTime startDate, 
                                                @Param("endDate") LocalDateTime endDate);
+    
+    @Query("SELECT o FROM MedicineOrder o JOIN FETCH o.patient JOIN FETCH o.prescription WHERE o.pharmacy = :pharmacy ORDER BY o.createdAt DESC")
+    List<MedicineOrder> findByPharmacyWithPatientAndPrescriptionOrderByCreatedAtDesc(@Param("pharmacy") PharmacyStore pharmacy);
+    
+    @Query("SELECT o FROM MedicineOrder o JOIN FETCH o.patient JOIN FETCH o.prescription WHERE o.patient = :patient ORDER BY o.createdAt DESC")
+    List<MedicineOrder> findByPatientWithPatientAndPrescriptionOrderByCreatedAtDesc(@Param("patient") Patient patient);
+    
+    @Query("SELECT o FROM MedicineOrder o JOIN FETCH o.patient JOIN FETCH o.prescription WHERE o.status = :status ORDER BY o.createdAt ASC")
+    List<MedicineOrder> findByStatusWithPatientAndPrescriptionOrderByCreatedAtAsc(@Param("status") OrderStatus status);
+    
+    @Query("SELECT o FROM MedicineOrder o JOIN FETCH o.patient JOIN FETCH o.prescription WHERE o.id = :orderId")
+    Optional<MedicineOrder> findByIdWithPatientAndPrescription(@Param("orderId") Long orderId);
+    
+    @Query("SELECT o FROM MedicineOrder o JOIN FETCH o.patient JOIN FETCH o.prescription WHERE o.orderNumber = :orderNumber")
+    Optional<MedicineOrder> findByOrderNumberWithPatientAndPrescription(@Param("orderNumber") String orderNumber);
 }
