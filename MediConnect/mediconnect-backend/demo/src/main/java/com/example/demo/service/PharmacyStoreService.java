@@ -22,12 +22,12 @@ public class PharmacyStoreService {
 
     public PharmacyStore createPharmacyStore(PharmacyStoreDto dto) {
         System.out.println("=== CREATING PHARMACY STORE ===");
-        System.out.println("User ID: " + dto.getUserId());
+        System.out.println("User ID: " + dto.getId());
 
         // Find the user by ID
-        User user = userService.findById(dto.getUserId());
+        User user = userService.findById(dto.getId());
         if (user == null) {
-            throw new RuntimeException("User not found with id: " + dto.getUserId());
+            throw new RuntimeException("User not found with id: " + dto.getId());
         }
         System.out.println("User found: " + user.getUsername());
 

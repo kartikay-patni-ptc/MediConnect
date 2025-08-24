@@ -20,8 +20,7 @@ public class PatientController {
     @Autowired
     private PatientService patientService;
 
-    @Autowired
-    private DoctorService doctorService;
+
 
     @PostMapping("/create-profile")
     public ResponseEntity<?> createProfile(@RequestBody PatientDto patientDto) {
@@ -66,10 +65,7 @@ public class PatientController {
 
 
                 return ResponseEntity.ok(Map.of(
-                        "patient", patient,
-                        "doctors", List.of(),
-                        "appointments", List.of(),
-                        "prescriptions", List.of()
+                        "patient", patient
                 ));
             } else {
                 return ResponseEntity.notFound().build();
@@ -89,6 +85,14 @@ public class PatientController {
             ));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+    @GetMapping("/history/{patientId}")
+    public ResponseEntity<?> getHistory(@PathVariable Long patientId) {
+        try {
+            return ResponseEntity.ok(patientService.getPatientHistory(patientId));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(java.util.Map.of("error", e.getMessage()));
         }
     }
 }

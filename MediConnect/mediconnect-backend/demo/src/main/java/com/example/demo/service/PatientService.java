@@ -1,14 +1,13 @@
 package com.example.demo.service;
 
-import com.example.demo.model.Patient;
-import com.example.demo.model.PatientDto;
-import com.example.demo.model.User;
-import com.example.demo.repository.PatientRepository;
-import com.example.demo.repository.UserRepository;
+import com.example.demo.model.*;
+import com.example.demo.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -23,17 +22,17 @@ public class PatientService {
 
     public Patient createPatientProfile(PatientDto dto) {
         System.out.println("=== CREATING PATIENT PROFILE ===");
-        System.out.println("User ID: " + dto.getUserId());
+        System.out.println("User ID: " + dto.getId());
 
-        Optional<User> userOpt = userRepository.findById(dto.getUserId());
+        Optional<User> userOpt = userRepository.findById(dto.getId());
         if (userOpt.isEmpty()) {
-            throw new RuntimeException("User not found with id: " + dto.getUserId());
+            throw new RuntimeException("User not found with id: " + dto.getId());
         }
 
         User user = userOpt.get();
         System.out.println("User found: " + user.getUsername());
 
-        Optional<Patient> existingProfile = patientRepository.findByUserId(dto.getUserId());
+        Optional<Patient> existingProfile = patientRepository.findByUserId(dto.getId());
         if (existingProfile.isPresent()) {
             throw new RuntimeException("Patient profile already exists for this user");
         }
@@ -86,5 +85,25 @@ public class PatientService {
 
     public List<Patient> getAllPatients() {
         return patientRepository.findAll();
+    }
+    @Autowired
+    private MedicationHistoryRepository medicationHistoryRepository;
+
+    @Autowired
+    private MedicalReportRepository medicalReportRepository;
+
+    @Autowired
+    private AllergyRepository allergyRepository;
+
+    public Map<String, Object> getPatientHistory(Long patientId) {
+        List<MedicationHistory> medications = medicationHistoryRepository.findByPatientId(patientId);
+        List<Allergy> allergies = allergyRepository.findByPatientId(patientId);
+        List<MedicalReport> reports = medicalReportRepository.findByPatientId(patientId);
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("medications", medications);
+        result.put("allergies", allergies);
+        result.put("reports", reports);
+        return result;
     }
 }

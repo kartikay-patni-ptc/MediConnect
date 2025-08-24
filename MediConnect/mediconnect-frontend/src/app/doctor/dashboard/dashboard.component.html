@@ -3,10 +3,10 @@
   <!-- Desktop Sidebar -->
   <aside class="bg-white border-r border-gray-200 w-72 shrink-0 hidden lg:flex lg:flex-col" [class.hidden]="!isSidebarOpen">
     <div class="p-4 flex items-center gap-3 border-b border-gray-200">
-      <p-avatar label="DO" shape="circle" styleClass="bg-blue-500 text-white"></p-avatar>
+    <p-avatar [label]="getDoctorInitials()" shape="circle" styleClass="bg-blue-500 text-white"></p-avatar>
       <div>
-        <div class="font-semibold">Dr. {{ currentUser?.firstName || 'Kartikay' }}</div>
-        <div class="text-sm text-gray-500">{{ currentUser?.specialization || 'Cardiologist' }}</div>
+        <div class="font-semibold">Dr. {{ getDoctorDisplayName() }}</div>
+        <div class="text-sm text-gray-500">{{ doctorProfile?.specialization || 'Specialist' }}</div>
       </div>
     </div>
 
@@ -21,10 +21,10 @@
   <!-- Mobile Sidebar -->
   <p-sidebar [(visible)]="mobileSidebar" position="left" styleClass="w-80" [modal]="true">
     <div class="p-4 flex items-center gap-3 border-b">
-      <p-avatar label="DO" shape="circle" styleClass="bg-blue-500 text-white"></p-avatar>
+      <p-avatar [label]="getDoctorInitials()" shape="circle" styleClass="bg-blue-500 text-white"></p-avatar>
       <div>
-        <div class="font-semibold">Dr. {{ currentUser?.firstName || 'Kartikay' }}</div>
-        <div class="text-sm text-gray-500">{{ currentUser?.specialization || 'Cardiologist' }}</div>
+        <div class="font-semibold">Dr. {{ getDoctorDisplayName() }}</div>
+        <div class="text-sm text-gray-500">{{ doctorProfile?.specialization || 'Specialist' }}</div>
       </div>
     </div>
     <nav class="p-3 space-y-1">
@@ -59,7 +59,7 @@
         <button pButton icon="pi pi-bell" class="p-button-text" pTooltip="Notifications"></button>
         <button pButton icon="pi pi-home" class="p-button-outlined p-button-sm" (click)="goToHome()" pTooltip="Go to Home"></button>
         <button pButton icon="pi pi-sign-out" class="p-button-danger p-button-outlined p-button-sm" (click)="logout()" pTooltip="Logout"></button>
-        <p-avatar label="DO" shape="circle"></p-avatar>
+        
       </div>
     </p-toolbar>
 
@@ -67,9 +67,7 @@
       <div class="max-w-7xl mx-auto space-y-6">
         <div class="flex items-center justify-between">
           <h2 class="text-xl lg:text-2xl font-semibold">Dashboard</h2>
-          <button pButton type="button" class="p-button-text hidden lg:inline-flex" (click)="toggleSidebar()">
-  <i class="pi" [ngClass]="isSidebarOpen ? 'pi-times' : 'pi-bars'"></i>
-</button>
+          
         </div>
 
         <!-- Upload Prescription Dialog -->

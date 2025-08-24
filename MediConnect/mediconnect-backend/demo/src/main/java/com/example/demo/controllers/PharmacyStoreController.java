@@ -50,7 +50,7 @@ public class PharmacyStoreController {
             if (dto.getDescription() == null || dto.getDescription().trim().isEmpty()) {
                 return ResponseEntity.badRequest().body(Map.of("error", "Description is required"));
             }
-            if (dto.getUserId() == null) {
+            if (dto.getId() == null) {
                 return ResponseEntity.badRequest().body(Map.of("error", "User ID is required"));
             }
 

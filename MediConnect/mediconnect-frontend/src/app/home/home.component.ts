@@ -18,14 +18,18 @@ export class HomeComponent implements OnInit, OnDestroy {
   sent = false;
   private intersectionObserver?: IntersectionObserver;
 
-  constructor(private router: Router, private authService: AuthService, private fb: FormBuilder) {
+  constructor(private router: Router, private authService: AuthService, private fb: FormBuilder) {}
+
+    ngOnInit(): void {
+      
+    
     this.isLoggedIn = this.authService.isLoggedIn();
     if (this.isLoggedIn) {
       this.currentUser = this.authService.getCurrentUser();
     }
-  }
+  
 
-  ngOnInit(): void {
+  
     this.contactForm = this.fb.group({
       name: ['', [Validators.required, Validators.minLength(2)]],
       email: ['', [Validators.required, Validators.email]],

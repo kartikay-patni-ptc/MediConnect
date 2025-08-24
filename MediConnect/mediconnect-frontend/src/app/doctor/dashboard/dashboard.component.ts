@@ -45,11 +45,12 @@ export class DashboardComponent implements OnInit {
   searchQuery = '';
   loading = true;
   currentUser: any;
+  doctorProfile: any;
   showAppointmentDialog = false;
   selectedAppointment: Appointment | null = null;
   completedAppointments = 0;
 
-  greeting = 'Good afternoon, Dr. Onichaan 👋';
+  greeting = 'Good afternoon, Doctor 👋';
 
   breadcrumbHome: MenuItem = { icon: 'pi pi-home', routerLink: ['/doctor'] };
   breadcrumbItems: MenuItem[] = [{ label: 'Dashboard' }];
@@ -206,6 +207,7 @@ export class DashboardComponent implements OnInit {
     this.currentUser = this.authService.getCurrentUser();
     this.isSidebarOpen = localStorage.getItem('mc_sidebarOpen') !== 'false';
     this.loadDoctorData();
+    this.loadDoctorProfile
 
     this.actionItems = [
       { label: 'New Appointment', icon: 'pi pi-plus', command: () => this.onNew() },
@@ -227,13 +229,42 @@ export class DashboardComponent implements OnInit {
     }, 500);
   }
 
+loadDoctorProfile(): void {
+    const userId = this.authService.getUserId();
+    if (userId) {
+      this.authService.getDoctorProfile(userId).subscribe({
+        next: (response: any) => {
+          if (response) {
+            this.doctorProfile = response;
+            // Update greeting with actual doctor name
+            if (response.firstName && response.lastName) {
+              this.greeting = `Good ${this.getTimeOfDay()}, Dr. ${response.firstName} ${response.lastName} 👋`;
+            } else if (response.firstName) {
+              this.greeting = `Good ${this.getTimeOfDay()}, Dr. ${response.firstName} 👋`;
+            } else {
+              this.greeting = `Good ${this.getTimeOfDay()}, ${this.currentUser?.username} 👋`;
+            }
+          }
+        },
+        error: (error) => {
+          console.error('Error loading doctor profile:', error);
+          // Fallback to username if profile fetch fails
+          this.greeting = `Good ${this.getTimeOfDay()}, ${this.currentUser?.username} 👋`;
+        }
+      });
+    }
+  }
+
   loadDoctorData(): void {
     const userId = this.authService.getUserId();
     if (userId) {
       this.authService.getDoctorDashboard(userId).subscribe({
         next: (response: any) => {
           if (response.doctor) {
-            this.greeting = `Good ${this.getTimeOfDay()}, Dr. ${response.doctor.firstName} 👋`;
+            // Debug logging
+            console.log('Raw appointment data:', response.appointments);
+            console.log('AI Summary type:', typeof response.appointments[0].aiSummary);
+            console.log('AI Summary value:', response.appointments[0].aiSummary);
             
             // Update patient stats with real data
             this.patientStats = {
@@ -346,7 +377,27 @@ export class DashboardComponent implements OnInit {
     if (hour < 17) return 'afternoon';
     return 'evening';
   }
+  getDoctorInitials(): string {
+    if (this.doctorProfile?.firstName && this.doctorProfile?.lastName) {
+      return (this.doctorProfile.firstName.charAt(0) + this.doctorProfile.lastName.charAt(0)).toUpperCase();
+    } else if (this.doctorProfile?.firstName) {
+      return this.doctorProfile.firstName.charAt(0).toUpperCase();
+    } else if (this.currentUser?.username) {
+      return this.currentUser.username.charAt(0).toUpperCase();
+    }
+    return 'DR';
+  }
 
+  getDoctorDisplayName(): string {
+    if (this.doctorProfile?.firstName && this.doctorProfile?.lastName) {
+      return `${this.doctorProfile.firstName} ${this.doctorProfile.lastName}`;
+    } else if (this.doctorProfile?.firstName) {
+      return this.doctorProfile.firstName;
+    } else if (this.currentUser?.username) {
+      return this.currentUser.username;
+    }
+    return 'Doctor';
+  }
   viewAppointmentDetails(appointment: Appointment): void {
     this.selectedAppointment = appointment;
     this.showAppointmentDialog = true;

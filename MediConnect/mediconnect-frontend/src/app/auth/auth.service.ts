@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { tap, switchMap } from 'rxjs/operators';
+import { Observable, of } from 'rxjs';
+import { tap, switchMap, map, catchError } from 'rxjs/operators';
 
 export interface LoginRequest {
   username: string;
@@ -157,11 +157,38 @@ export class AuthService {
   isLoggedIn(): boolean {
     const token = this.getToken();
     if (!token) { return false; }
+    
+    // Check if token is malformed
+    if (!this.isValidTokenFormat(token)) {
+      this.logout();
+      return false;
+    }
+    
     if (this.isTokenExpired(token)) {
       this.logout();
       return false;
     }
     return true;
+  }
+
+  private isValidTokenFormat(token: string): boolean {
+    // JWT tokens should have 3 parts separated by dots
+    const parts = token.split('.');
+    if (parts.length !== 3) {
+      return false;
+    }
+    
+    // Check if parts are valid base64
+    try {
+      parts.forEach(part => {
+        if (part) {
+          atob(part.replace(/-/g, '+').replace(/_/g, '/'));
+        }
+      });
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   private decodeJwt(token: string): any | null {
@@ -180,9 +207,40 @@ export class AuthService {
     const jwt = token || this.getToken();
     if (!jwt) { return true; }
     const payload = this.decodeJwt(jwt);
-    if (!payload || !payload.exp) { return true; }
+    if (!payload) { return true; }
+    
+    // If no expiration time in token, consider it expired for security
+    if (!payload.exp) {
+      console.warn('JWT token has no expiration time, treating as expired');
+      return true;
+    }
+    
     const nowSeconds = Math.floor(Date.now() / 1000);
     return payload.exp < nowSeconds;
+  }
+
+  // Method to validate and clean up tokens on app startup
+  validateAndCleanupToken(): void {
+    const token = this.getToken();
+    if (!token) { return; }
+    
+    if (!this.isValidTokenFormat(token) || this.isTokenExpired(token)) {
+      console.log('Invalid or expired token found, clearing session');
+      this.logout();
+    }
+  }
+
+  // Optional: Validate token with backend (if your backend supports it)
+  validateTokenWithBackend(): Observable<boolean> {
+    return this.http.get<{valid: boolean}>(`${this.API_URL}/validate-token`)
+      .pipe(
+        map((response: {valid: boolean}) => response.valid),
+        catchError(() => {
+          // If validation endpoint doesn't exist or fails, assume invalid
+          this.logout();
+          return of(false);
+        })
+      );
   }
 
   getCurrentUser(): any {
