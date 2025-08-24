@@ -25,9 +25,6 @@ public class DoctorController {
     private DoctorService doctorService;
 
     @Autowired
-    private PatientService patientService;
-
-    @Autowired
     private AppointmentService appointmentService;
 
     @PostMapping("/create-profile")

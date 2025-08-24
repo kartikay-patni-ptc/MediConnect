@@ -223,9 +223,18 @@ export class PatientDashboardComponent implements OnInit {
     this.router.navigate(['/patient/profile']);
   }
 
-  logout(): void {
+    logout(): void {
     this.authService.logout();
+    this.messageService.add({
+      severity: 'success',
+      summary: 'Logged Out',
+      detail: 'You have been successfully logged out'
+    });
+    setTimeout(() => {
+      this.router.navigate(['/home']);
+    }, 1000);
   }
+  
   
   clearSearch(): void {
     this.searchTerm = '';
