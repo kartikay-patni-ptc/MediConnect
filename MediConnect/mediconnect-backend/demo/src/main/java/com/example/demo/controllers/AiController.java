@@ -35,8 +35,6 @@ public class AiController {
 			return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
 		}
 	}
-	
-	// Test endpoint removed for simplicity
 
 	@GetMapping("/history/{patientId}")
 	public ResponseEntity<?> history(@PathVariable Long patientId) {
